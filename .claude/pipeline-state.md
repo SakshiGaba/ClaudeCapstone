@@ -4,8 +4,8 @@
 > a stage. This is the single source of truth for "where are we."
 
 **Active story:** ITEMS-101 — Categorize and Filter Items
-**Current stage:** 4 — Implementation Planning (not started)
-**Last completed stage:** 3 — Design Review
+**Current stage:** 5 — Implementation (not started)
+**Last completed stage:** 4 — Implementation Planning
 
 ## Stage log
 
@@ -14,8 +14,8 @@
 | 1. Requirements | `my-app/requirements.md` | ✅ Complete — clarified & committed | `1e87fcb` |
 | 2. Architecture | `my-app/architecture.md` | ✅ Complete — confirmed, committed, revised per Design Review | `f13efd2`, revised `52b152d` |
 | 3. Design Review | `my-app/design-review.md` | ✅ Complete — reviewed & agreed & committed | `52b152d` |
-| 4. Implementation Planning | `my-app/impl-plan.md` | ⏳ Not started | — |
-| 5. Implementation | (source diffs) | ⏳ Not started | — |
+| 4. Implementation Planning | `my-app/impl-plan.md` | ✅ Complete — confirmed & committed | (recorded below after commit) |
+| 5. Implementation | (source diffs) | ⏳ Not started — task list ready: T1-T12, see `impl-plan.md` §2 | — |
 | 6. Code Review | `my-app/code-review.md` | ⏳ Not started | — |
 | 7. Verification | test run output | ⏳ Not started | — |
 | 8. PR | PR description | ⏳ Not started | — |
@@ -48,16 +48,24 @@
   on malformed input (ties to NFR-4). See `architecture.md` §3/§4/§6 and
   `my-app/design-review.md` §2 finding.
 
-- **Design Review should-note items, deferred (not architecture.md
-  changes), for Stage 4/5/6 to carry forward:**
-  1. Migration-startup failure behavior (fail-fast recommended, not yet
-     coded) — see `design-review.md` §2.
-  2. NFR-1 (200ms/10k items) needs an explicit load-test plan (seed
-     script + timing), separate from Playwright UI specs — must be
-     planned at Stage 4.
-  3. The "All" filter sentinel is client-only (omit the `category` param);
-     the server must never special-case a literal `"All"` string — keep
-     this in mind during Stage 5 implementation.
+- **Design Review should-note items — planned into `impl-plan.md` at Stage 4
+  (2026-09-12), no longer just carried notes:**
+  1. Migration-startup failure behavior (fail-fast) — folded into **T1** as
+     an explicit implementation requirement.
+  2. NFR-1 (200ms/10k items) load-test — **T12**, its own task
+     (`server/scripts/load-test.js`). Per human decision, **T12 blocks
+     Stage 8 (PR)** — its measured numbers are required Test Evidence, not
+     a post-merge fast-follow.
+  3. The "All" filter sentinel is client-only — folded into **T3** (server:
+     never special-case any literal string) and **T5** (client: omit the
+     param for "All") as explicit acceptance criteria.
+
+- **Stage 4 task list for Stage 5 to pick up, in dependency order:** T1
+  (schema/migration) → T2, T3 (server endpoints, can proceed in either
+  order once T1 is done) → T4 → T5 → T6 → T7 (client, strictly sequential)
+  → T8, T9, T10, T11 (Playwright specs, each gated on its feature task) →
+  T12 (load-test, gated on T1+T3, blocks Stage 8). Full detail, file
+  paths, and acceptance criteria in `my-app/impl-plan.md` §2-3.
 
 ## Enforcement
 
@@ -112,6 +120,32 @@ re-run the same manual diagnostic (`echo '{...}' | bash
 .claude/hooks/check-stage-approval.sh`) to confirm `node` is found and used
 on your machine, then retry a real Write/Edit in a `claude` session to
 confirm the block is now visible.
+
+**New finding at Stage 4 (2026-09-12) — this is NOT the python3 bug
+recurring, it's a different gap:** in *this* session, the `plan.approved`
+marker was again left un-consumed after a successful `Write` to
+`my-app/impl-plan.md`. Isolated the cause by invoking the hook script
+directly (not through the tool call) with the exact same absolute file
+path and an empty approvals dir: it correctly printed `BLOCKED` and
+returned exit code 2. So the hook script itself is correct and does fail
+closed — the problem is that the `PreToolUse` hook is **not being invoked
+at all** for `Write`/`Edit` calls in this particular session/harness (if it
+had fired and allowed via the marker-exists path, the marker would have
+been deleted; it wasn't — meaning the hook's code never ran, not that it
+ran and passed). This is distinct from both earlier issues: it's not a
+JSON-parsing failure (the script's own logic is sound) and it's not the
+disproven "VS Code doesn't read settings.json" theory either, since that
+was specifically checked against the human's own terminal session, not
+this one. Whatever is driving this conversation (agent harness / SDK
+session, as opposed to an interactive terminal `claude` invocation)
+appears not to wire up project `PreToolUse` hooks the same way. **This is
+outside what can be fixed by editing repo files** — it's an invocation
+difference in the environment running this session. Flagging for the
+human's awareness; every gated write in this session has still been
+individually approved via `record-approval.sh` first and manually verified
+against the approved content before commit, so the *human-approval*
+requirement has been honored throughout even though the *technical*
+enforcement hasn't been firing here.
 
 ## Notes for whoever/whatever picks this up next
 
