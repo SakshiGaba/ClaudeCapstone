@@ -1,0 +1,60 @@
+# ClaudeCapstone — Agentic SDLC Pipeline
+
+This repo is driven end-to-end by an **Agentic SDLC pipeline**: requirements →
+architecture → design review → implementation planning → implementation →
+code review → verification → PR. Every stage produces a durable artifact
+(a markdown file, a diff, a test run) — nothing is considered "done" until
+its artifact exists and is committed.
+
+Project under management: `my-app/` (React + Express + SQLite items app).
+
+## Pipeline stages and their artifacts
+
+| # | Stage | Artifact | Command | Status |
+|---|---|---|---|---|
+| 1 | Requirements | `my-app/requirements.md` | `/requirements` | ✅ implemented |
+| 2 | Architecture | `my-app/architecture.md` | `/architecture` | ⏳ not yet built |
+| 3 | Design Review | `my-app/design-review.md` | `/design-review` | ⏳ not yet built |
+| 4 | Implementation Planning | `my-app/impl-plan.md` | `/plan` | ⏳ not yet built |
+| 5 | Implementation | source diffs | (main agent loop) | ⏳ not yet built |
+| 6 | Code Review | review notes / `my-app/code-review.md` | `/code-review` | ⏳ not yet built |
+| 7 | Verification | test run output | `/verify` | ⏳ not yet built |
+| 8 | PR | PR description | `/open-pr` | ⏳ not yet built |
+
+Live pipeline state (which stage is current, what's been approved) is tracked
+in `.claude/pipeline-state.md`. Always read that file at the start of a
+session in this repo before deciding what to do next.
+
+## Ground rules for every stage
+
+- **Human-in-the-loop is mandatory.** Every stage that produces or changes a
+  scope-defining artifact (requirements, architecture, plan) must pause and
+  ask the human clarifying questions *before* writing the artifact, if the
+  input is ambiguous or underspecified. Do not silently assume.
+- **Auto-generate after unblocked.** Once the human has answered outstanding
+  questions for a stage, immediately write the artifact and commit it —
+  do not wait for an additional "go ahead" prompt for that same stage.
+- **One stage at a time.** Do not jump ahead to a later stage's artifact
+  (e.g. don't sketch architecture while still gathering requirements) unless
+  explicitly asked to.
+- **Every artifact gets committed.** Use descriptive commit messages that
+  name the stage and reference the prior stage's artifact where relevant.
+- **Update `.claude/pipeline-state.md`** after completing a stage, so the
+  orchestrator (and any future session) knows where things stand.
+
+## Stack context (for all stages)
+
+- **Frontend:** React (`my-app/client`)
+- **Backend:** Express (`my-app/server/index.js`)
+- **DB:** SQLite (`my-app/server/db/app.db`, created at runtime)
+- **Tests:** Playwright (`my-app/tests/`)
+- Existing API: `GET /api/health`, `GET /api/items`, `POST /api/items`,
+  `DELETE /api/items/:id`
+
+## Orchestrator
+
+The `sdlc-orchestrator` subagent (`.claude/agents/orchestrator.md`) is
+responsible for sequencing these stages, checking `.claude/pipeline-state.md`,
+and invoking the right command for the current stage. Prefer delegating to it
+when asked to "continue the pipeline" or "do the next step," rather than
+guessing which stage comes next.
