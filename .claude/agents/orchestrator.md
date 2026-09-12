@@ -71,8 +71,13 @@ state-tracking, and delegation.
   correctness, security, error handling, test coverage, code clarity, DRY,
   dependency safety (via `npm audit`). Agrees any must-fix items with the
   human before applying them; writes `my-app/code-review.md`.
-- **Verification** (`/verify`) — not yet implemented. Will run the test suite
-  and a content-quality check on generated docs.
+- **Verification** (`/verify`) — implemented. Runs the full test suite for
+  real (characterizing any known flake across multiple runs, not accepting
+  a single pass), re-checks dependency audit status, builds an FR/NFR
+  traceability matrix, and checks the 5 prior documents for internal
+  consistency (contradictions, stale checklists, broken cross-references).
+  Writes `my-app/verification-report.md`, which feeds Stage 8's Known
+  Limitations section directly.
 - **PR** (`/open-pr`) — not yet implemented. Will generate the PR description
   with Summary / Changes Made / Test Evidence / Known Limitations / Reviewer
   Checklist.

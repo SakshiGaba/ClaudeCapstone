@@ -7,7 +7,7 @@
 # Usage: record-approval.sh <stage> "<confirmation text>"
 set -euo pipefail
 
-VALID_STAGES=("requirements" "architecture" "design-review" "plan" "code-review")
+VALID_STAGES=("requirements" "architecture" "design-review" "plan" "code-review" "verify")
 
 STAGE="${1:-}"
 CONFIRMATION="${2:-}"
