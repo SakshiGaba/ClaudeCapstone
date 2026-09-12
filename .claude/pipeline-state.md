@@ -87,6 +87,26 @@ was verified correct via `git diff`/read-back before commit — this caveat
 affects marker bookkeeping only, not the human-approval requirement itself
 (approval was still obtained and content still matches what was approved).
 
+**Root cause identified (2026-09-12):** confirmed with the human that Stages
+2-3 were run via the **VS Code Claude Code extension's chat panel**, not a
+real terminal running the `claude` CLI. There is a known, open Claude Code
+issue where the VS Code extension does not read or respect permission/hook
+settings from `.claude/settings.json` (or user-level `~/.claude/settings.json`),
+even though CLI and extension are documented as sharing settings. This fully
+explains the observed behavior: the hook script itself is correct (verified
+8/8 manual test cases), but the extension panel never invokes it, so writes
+to gated artifacts succeed unconditionally regardless of approval markers.
+
+**Practical implication:** for as long as this stage's work is done via the
+extension panel, "enforcement" is effectively back to instruction-following
+only (the command files still say "ask before writing," and that's being
+followed) — the hook is not actually the backstop it was designed to be.
+**Action:** verify the hook actually blocks/allows when the same command is
+run from a genuine terminal (`claude` typed into an OS shell, including
+VS Code's own integrated terminal panel, not the extension's chat sidebar)
+before relying on it for Stage 5+ (Implementation), where enforcement matters
+most (source code changes, not just docs).
+
 ## Notes for whoever/whatever picks this up next
 
 - Requirements are locked (FR-1..FR-8, NFR-1..NFR-4). Architecture stage
