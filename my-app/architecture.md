@@ -3,6 +3,10 @@
 **Status:** Proposed and confirmed with human on 2026-09-12
 **Builds on:** `my-app/requirements.md` (FR-1..FR-8, NFR-1..NFR-4)
 
+**Revised per Design Review (2026-09-12):** added explicit type-checking to
+input validation (§3, §4 Flow A, §6) per Design Review finding B — see
+`my-app/design-review.md`.
+
 ## 1. Overview
 
 This is an **incremental extension** of the existing Items app, not a
@@ -37,7 +41,7 @@ as written.
 | Component | Responsibility | What changes for this story |
 |---|---|---|
 | `client/src/App.js` | Renders item list, add-item form, drives all UI state | Add a `category` text input to the add form; add a category filter control (dropdown/select) driven by distinct categories currently in view; re-fetch or update state after add/delete so the filtered view stays live (FR-4); render an explicit empty-state message when the filtered list is empty (FR-5) instead of the current generic "no items yet" text |
-| `server/index.js` | Express routes, request validation, SQL access | `POST /api/items`: accept optional `category`, trim it, default to `Uncategorized` if blank/whitespace-only, reject if >50 chars after trim (FR-1, FR-7); `GET /api/items`: accept optional `category` query param, filter case-insensitively when present (FR-3, NFR-2); add a startup migration routine (see §5) |
+| `server/index.js` | Express routes, request validation, SQL access | `POST /api/items`: reject non-string `name`/`category` (arrays, numbers, objects, `null`) with `400` *before* any `.trim()` call (Design Review finding B), then trim, default to `Uncategorized` if blank/whitespace-only, reject if >50 chars after trim (FR-1, FR-7); `GET /api/items`: accept optional `category` query param, reject a non-string value (e.g. a repeated `?category=` producing an array) with `400`, filter case-insensitively otherwise (FR-3, NFR-2); add a startup migration routine (see §5) |
 | `server/db/app.db` (SQLite) | Persistent storage | New `category` column with a `NOT NULL DEFAULT 'Uncategorized'` constraint (FR-8); new expression index for case-insensitive lookups (NFR-1) |
 | `tests/app.spec.js` (Playwright) | End-to-end verification | New specs for: add with category, add without category (defaults), filter by category, filter with zero matches (empty state), delete under an active filter, validation rejection for overlong category (NFR-4) — built in Stage 5/7, not this stage |
 
@@ -51,14 +55,19 @@ new plumbing is needed there.
 1. User types a name and (optionally) a category in the client form, submits.
 2. Client `POST /api/items` with `{ name, category }` (category may be
    omitted or empty).
-3. Server trims `name` (existing behavior, unchanged) and `category`.
-4. If trimmed `category` is empty → server stores `"Uncategorized"` (FR-1).
-5. If trimmed `category` is non-empty and ≤50 chars → server stores it
+3. **Server validates type first (Design Review finding B):** if `name` is
+   present but not a string, or `category` is present but not a string,
+   respond `400` immediately — do not call `.trim()` on a non-string value
+   (which would throw and surface as an uncaught 500). `category` being
+   `undefined`/absent is not a type error; it proceeds to step 4.
+4. Server trims `name` (existing behavior, unchanged) and `category`.
+5. If trimmed `category` is empty → server stores `"Uncategorized"` (FR-1).
+6. If trimmed `category` is non-empty and ≤50 chars → server stores it
    as-typed (preserving casing per FR-2).
-6. If trimmed `category` is non-empty and >50 chars → server responds
+7. If trimmed `category` is non-empty and >50 chars → server responds
    `400` with a validation message (FR-7); client shows the error, does not
    clear the form.
-7. On success, server responds `201` with the created row (id, name,
+8. On success, server responds `201` with the created row (id, name,
    category). Client clears the form and re-fetches (or optimistically
    inserts) so the item appears immediately — including if it matches the
    currently active filter (FR-4).
@@ -104,6 +113,7 @@ moment the column is added — no separate backfill script (FR-8).
 | Case-insensitive matching | **SQLite expression index** `CREATE INDEX ... ON items(LOWER(category))`, queries use `WHERE LOWER(category) = LOWER(?)` | Confirmed with human. Keeps the *stored* value's original casing (FR-2's display requirement) while making case-insensitive lookups index-backed rather than a full table scan, satisfying NFR-1 without adding a normalized shadow column (which would need to be kept in sync on every write). |
 | Validation location | Server-side only, in `server/index.js` (same file/pattern as existing `name` validation) | NFR-2 explicitly requires server-side enforcement; the existing `name` validation already lives here, so this follows the established pattern rather than introducing a separate validation layer/library. |
 | Filter transport | Query parameter on the existing `GET /api/items` endpoint, not a new endpoint | Keeps the API surface minimal; a query param is the conventional REST approach for optional filtering and requires no client-side routing changes. |
+| Input type-checking | **Explicit `typeof === 'string'` guard** on `name`/`category` (body) and `category` (query param), returning `400` before any `.trim()`/comparison, rather than relying on truthiness checks alone | Added per Design Review (finding B). The existing `name` validation (`!name \|\| !name.trim()`) throws on a non-string (e.g. `req.query.category` becomes an array for a repeated query param); NFR-4 requires invalid-input coverage, so this must fail cleanly with `400`, not a `500`. |
 
 ## 7. Non-Functional Considerations
 
