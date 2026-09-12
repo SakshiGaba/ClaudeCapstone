@@ -43,7 +43,18 @@ JIRA/Confluence-style text.
 ## Phase C — Capture (automatic once unblocked)
 
 Once the human has answered, **immediately** — without waiting for a further
-"go ahead" — write `my-app/requirements.md` with this structure:
+"go ahead" — record the approval and write `my-app/requirements.md`.
+
+**This is technically enforced, not just an instruction:** a `PreToolUse`
+hook (`.claude/hooks/check-stage-approval.sh`) blocks any Write/Edit to
+`my-app/requirements.md` unless a fresh, single-use approval marker exists.
+So before writing:
+
+```bash
+bash .claude/scripts/record-approval.sh requirements "<quoted summary of the human's actual answers>"
+```
+
+Only after that succeeds, write `my-app/requirements.md` with this structure:
 
 ```
 # Requirements: <STORY-ID> — <Title>
@@ -84,3 +95,7 @@ or a revision of the existing one (replace with confirmation).
 - Keep FR/NFR items testable — each should be phrasable as a Playwright
   assertion or an API contract check, since Stage 7 (Verification) will need
   to trace back to these.
+- If you attempt to write `my-app/requirements.md` without having run
+  `record-approval.sh` first, the write will fail (hook exit code 2, not a
+  style violation) — go back and get human approval, you cannot bypass this
+  by trying again with slightly different wording.

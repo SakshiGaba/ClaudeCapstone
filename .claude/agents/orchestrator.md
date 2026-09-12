@@ -30,7 +30,12 @@ state-tracking, and delegation.
 
 ## Rules inherited from CLAUDE.md
 
-- Human-in-the-loop before writing any scope-defining artifact.
+- Human-in-the-loop before writing any scope-defining artifact — enforced by
+  the `PreToolUse` hook in `.claude/hooks/check-stage-approval.sh`, not just
+  by convention. If a Write/Edit to a gated artifact fails with exit code 2,
+  that means approval wasn't recorded yet — go get it via
+  `.claude/scripts/record-approval.sh`, don't treat it as a bug to route
+  around.
 - Auto-generate + auto-commit once a stage is unblocked — don't ask "should
   I write the file now?" after the human already answered your questions.
 - Every artifact commit updates `.claude/pipeline-state.md` in the same turn

@@ -25,6 +25,15 @@
 - None currently. All Stage 1 clarifying questions were resolved (see
   `my-app/requirements.md` §2).
 
+## Enforcement
+
+Stage approval is now a technical gate, not just an instruction: see
+`.claude/hooks/check-stage-approval.sh` (PreToolUse hook, wired in
+`.claude/settings.json`) and `.claude/scripts/record-approval.sh`. Tested
+2026-09-12: blocks unapproved writes (exit 2), allows exactly once after a
+valid `record-approval.sh` call, re-blocks immediately after (single-use),
+and passes through non-gated files/tools untouched.
+
 ## Notes for whoever/whatever picks this up next
 
 - Requirements are locked (FR-1..FR-8, NFR-1..NFR-4). Architecture stage
