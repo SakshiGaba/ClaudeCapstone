@@ -4,8 +4,8 @@
 > a stage. This is the single source of truth for "where are we."
 
 **Active story:** ITEMS-101 — Categorize and Filter Items
-**Current stage:** 8 — PR (not started)
-**Last completed stage:** 7 — Verification (3 traceability-gap tests added, flake mitigated, agreed & committed)
+**Current stage:** 8 — PR (complete — https://github.com/SakshiGaba/ClaudeCapstone/pull/1)
+**Last completed stage:** 8 — PR (all 8 stages of the pipeline now complete)
 
 ## Stage log
 
@@ -18,7 +18,7 @@
 | 5. Implementation | (source diffs) | ✅ Complete — T1-T12 all done | `48108be` (T1), `37a9b0d` (T2), `0227677` (T3), `064dac1` (T4), `4aa9362` (T5), `bbcf503` (T6), `3280893` (T7), `7a8a500` (T8), `c2a1cb7` (T9), `e5253d8` (T10), `e85a4f2` (T11), `9565b9c` (T12) |
 | 6. Code Review | `my-app/code-review.md` | ✅ Complete — reviewed, 2 must-fix items agreed & fixed, committed | `64e4948` (fix), `764bc4d` (code-review.md) |
 | 7. Verification | `my-app/verification-report.md` | ✅ Complete — 13 full-suite runs total across 2 passes, 3 traceability-gap tests added, flake mitigated, README.md gap found+fixed+independently reverified | `e2bd89a` (tests+config), `5facad8` (report v1 + DoD), `7936392`/`1bbef7d` (out-of-band README.md fix + `/verify` command update — confirmed authorized by human), `2bfad80` (fresh re-run, report v2) |
-| 8. PR | PR description | ⏳ Not started — current stage | — |
+| 8. PR | [PR #1](https://github.com/SakshiGaba/ClaudeCapstone/pull/1) | ✅ Complete — open, mergeable_state: clean | `1da0c72` (feature branch), retroactive reset `7be2d4f` (main) |
 
 ## Open items carried forward
 
@@ -193,6 +193,33 @@ is the actual backstop here, not the hook.
   parallel workers).
 
 Full detail and rationale for each: `my-app/verification-report.md` §5.
+
+## Stage 8 retroactive branch surgery (2026-09-12)
+
+All Stage 1-7 commits went directly to `main` (no feature branch existed
+before Stage 1, as it should have). To open a genuine PR:
+
+1. Created `feature/items-101-categorize-filter` at the tip of all
+   existing work.
+2. Added a commit on `main` (`7be2d4f`) resetting its tree content back to
+   the original pre-Stage-1 baseline — verified zero-diff against
+   `fa8b572 Initial commit` before committing. **Not a history rewrite** —
+   a normal additive commit, safe to pull normally.
+3. **First attempt was wrong:** opened PR #1 with the feature branch still
+   based on `411f247` (before the reset commit). GitHub PRs use a
+   three-dot diff (against the merge-base), so the PR only showed the one
+   commit added after the branch point — not the full work. Caught this
+   via the GitHub API (`mergeable_state: dirty`, `changed_files: 3`), not
+   assumed success.
+4. **Fixed:** rebased the feature branch (`git rebase --onto 7be2d4f
+   fa8b572 feature/items-101-categorize-filter`) — replayed all 55
+   commits onto the reset `main`, so the branch's merge-base with `main`
+   is now `main`'s own tip. Force-pushed (safe — a branch we created, not
+   shared `main`). Re-verified via the API: `mergeable_state: clean`,
+   `mergeable: true`, 34 files / 23,333 insertions — the full real diff.
+
+**Lesson for future stories:** branch *before* Stage 1, not after Stage 7.
+`/open-pr`'s prerequisite check should catch this earlier next time.
 
 ## Notes for whoever/whatever picks this up next
 
