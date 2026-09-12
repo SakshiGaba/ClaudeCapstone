@@ -4,7 +4,7 @@
 > a stage. This is the single source of truth for "where are we."
 
 **Active story:** ITEMS-101 — Categorize and Filter Items
-**Current stage:** 5 — Implementation (in progress — T1, T2 done, T3 unblocked next)
+**Current stage:** 5 — Implementation (in progress — T1, T2, T3 done, T4 unblocked next)
 **Last completed stage:** 4 — Implementation Planning
 
 ## Stage log
@@ -15,7 +15,7 @@
 | 2. Architecture | `my-app/architecture.md` | ✅ Complete — confirmed, committed, revised per Design Review | `f13efd2`, revised `52b152d` |
 | 3. Design Review | `my-app/design-review.md` | ✅ Complete — reviewed & agreed & committed | `52b152d` |
 | 4. Implementation Planning | `my-app/impl-plan.md` | ✅ Complete — confirmed & committed | `ada9a6d` |
-| 5. Implementation | (source diffs) | 🔄 In progress — T1, T2 done, T3-T12 remaining, see `impl-plan.md` §2 | `48108be` (T1), `37a9b0d` (T2) |
+| 5. Implementation | (source diffs) | 🔄 In progress — T1, T2, T3 done, T4-T12 remaining, see `impl-plan.md` §2 | `48108be` (T1), `37a9b0d` (T2), `0227677` (T3) |
 | 6. Code Review | `my-app/code-review.md` | ⏳ Not started | — |
 | 7. Verification | test run output | ⏳ Not started | — |
 | 8. PR | PR description | ⏳ Not started | — |
@@ -127,8 +127,8 @@ is the actual backstop here, not the hook.
 |---|---|---|
 | T1 — schema migration + index | ✅ Done | `48108be` |
 | T2 — POST validation/defaulting | ✅ Done | `37a9b0d` |
-| T3 — GET filter support | ⏳ Not started — unblocked, ready next (depends on T1) | — |
-| T4 — client category input | ⏳ Not started (depends on T2) | — |
+| T3 — GET filter support | ✅ Done | `0227677` |
+| T4 — client category input | ⏳ Not started — unblocked, ready next (depends on T2) | — |
 | T5 — client filter dropdown | ⏳ Not started (depends on T3, T4) | — |
 | T6 — client empty state | ⏳ Not started (depends on T5) | — |
 | T7 — client delete-under-filter | ⏳ Not started (depends on T5, T6) | — |
