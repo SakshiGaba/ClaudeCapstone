@@ -71,7 +71,10 @@ app.get('/api/items', (req, res) => {
     : 'SELECT * FROM items ORDER BY id DESC';
   const params = category !== undefined ? [category] : [];
   db.all(sql, params, (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
+    if (err) {
+      console.error('GET /api/items failed:', err.message);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
     res.json(rows);
   });
 });
@@ -97,7 +100,10 @@ app.post('/api/items', (req, res) => {
     'INSERT INTO items (name, category) VALUES (?, ?)',
     [name.trim(), finalCategory],
     function (err) {
-      if (err) return res.status(500).json({ error: err.message });
+      if (err) {
+        console.error('POST /api/items failed:', err.message);
+        return res.status(500).json({ error: 'Internal server error' });
+      }
       res.status(201).json({ id: this.lastID, name: name.trim(), category: finalCategory });
     }
   );
@@ -106,9 +112,23 @@ app.post('/api/items', (req, res) => {
 // Delete an item
 app.delete('/api/items/:id', (req, res) => {
   db.run('DELETE FROM items WHERE id = ?', [req.params.id], function (err) {
-    if (err) return res.status(500).json({ error: err.message });
+    if (err) {
+      console.error('DELETE /api/items/:id failed:', err.message);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
     res.json({ deleted: this.changes });
   });
+});
+
+// Malformed JSON bodies are thrown by express.json() as a SyntaxError before
+// reaching any route handler; without this, Express's default error handler
+// returns an HTML page including the stack trace when NODE_ENV isn't 'production'.
+app.use((err, req, res, next) => {
+  if (err.type === 'entity.parse.failed' || err instanceof SyntaxError) {
+    return res.status(400).json({ error: 'Invalid JSON in request body' });
+  }
+  console.error('Unhandled error:', err.message);
+  res.status(500).json({ error: 'Internal server error' });
 });
 
 const PORT = process.env.PORT || 5000;
