@@ -22,8 +22,18 @@
 
 ## Open items carried forward
 
-- None currently. All Stage 1 clarifying questions were resolved (see
-  `my-app/requirements.md` §2).
+- **Whitespace-only category conflict (found on Stage 1 re-run, 2026-09-12):**
+  the source story's AC #7 says a whitespace-only category should be
+  **rejected** with a validation message (same treatment as >50 chars), but
+  the committed `my-app/requirements.md` FR-7 says whitespace-only is treated
+  as "no category provided" and silently **defaults to `Uncategorized`**
+  (per FR-1). These are contradictory for the same input
+  (`category: "   "`). Requirements were left as committed (FR-1/FR-7 stand:
+  default-to-Uncategorized wins) rather than re-opening Stage 1, per human
+  confirmation ("you are right" — acknowledging the conflict without
+  requesting a rewrite). **Architecture/Implementation should build to FR-7
+  as written**, but flag this discrepancy again before Stage 6 (Code Review)
+  so it doesn't surprise verification against the story's literal AC text.
 
 ## Enforcement
 
