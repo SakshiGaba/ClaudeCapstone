@@ -39,7 +39,7 @@ not just individually correct).
 
 ## Phase C — Verify the documents (content-quality check)
 
-Read all 5 documents together, checking for:
+Read all 5 SDLC documents together, checking for:
 - **Contradictions between documents** (e.g. does `code-review.md` cite a
   decision that conflicts with what `design-review.md` or `requirements.md`
   actually say?).
@@ -50,6 +50,16 @@ Read all 5 documents together, checking for:
 - **Unresolved carried-forward items** that were never actually closed out
   (distinguish "deliberately deferred with a reason" from "silently
   dropped").
+
+**Also check the actual user-facing `my-app/README.md` against what was
+shipped** — this is "the final output document" a real developer or
+reviewer would read, and it is easy to forget since it isn't one of the 5
+SDLC-pipeline documents. Specifically check whether: the API endpoints
+table reflects any new/changed endpoints or request/response shapes, the
+project-structure diagram lists any new files/scripts, and the setup/usage
+instructions still work as written. Do not skip this just because it feels
+like a different kind of document from the other 5 — Stage 7's whole point
+is verifying the real deliverable, not just the paperwork about it.
 
 ## Phase D — Agree findings with the human (human-in-the-loop, mandatory)
 
