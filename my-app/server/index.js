@@ -9,10 +9,51 @@ app.use(express.json());
 
 const db = new sqlite3.Database(path.join(__dirname, 'db', 'app.db'));
 
-db.run(`CREATE TABLE IF NOT EXISTS items (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL
-)`);
+db.serialize(() => {
+  db.run(`CREATE TABLE IF NOT EXISTS items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL
+  )`, (err) => {
+    if (err) {
+      console.error('Fatal: failed to create items table:', err.message);
+      process.exit(1);
+    }
+  });
+
+  const createCategoryIndex = () => {
+    db.run(
+      'CREATE INDEX IF NOT EXISTS idx_items_category_lower ON items (LOWER(category))',
+      (err) => {
+        if (err) {
+          console.error('Fatal: failed to create category index:', err.message);
+          process.exit(1);
+        }
+      }
+    );
+  };
+
+  db.all('PRAGMA table_info(items)', [], (err, columns) => {
+    if (err) {
+      console.error('Fatal: failed to read items table schema:', err.message);
+      process.exit(1);
+    }
+    const hasCategory = columns.some((col) => col.name === 'category');
+    if (hasCategory) {
+      createCategoryIndex();
+    } else {
+      db.run(
+        `ALTER TABLE items ADD COLUMN category TEXT NOT NULL DEFAULT 'Uncategorized'`,
+        (err) => {
+          if (err) {
+            console.error('Fatal: failed to add category column:', err.message);
+            process.exit(1);
+          }
+          createCategoryIndex();
+        }
+      );
+    }
+  });
+});
 
 // Health check
 app.get('/api/health', (req, res) => {
