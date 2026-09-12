@@ -4,16 +4,16 @@
 > a stage. This is the single source of truth for "where are we."
 
 **Active story:** ITEMS-101 — Categorize and Filter Items
-**Current stage:** 3 — Design Review (not started)
-**Last completed stage:** 2 — Architecture
+**Current stage:** 4 — Implementation Planning (not started)
+**Last completed stage:** 3 — Design Review
 
 ## Stage log
 
 | Stage | Artifact | Status | Commit |
 |---|---|---|---|
 | 1. Requirements | `my-app/requirements.md` | ✅ Complete — clarified & committed | `1e87fcb` |
-| 2. Architecture | `my-app/architecture.md` | ✅ Complete — confirmed & committed | `f13efd2` |
-| 3. Design Review | `my-app/design-review.md` | ⏳ Not started | — |
+| 2. Architecture | `my-app/architecture.md` | ✅ Complete — confirmed, committed, revised per Design Review | `f13efd2`, revised `52b152d` |
+| 3. Design Review | `my-app/design-review.md` | ✅ Complete — reviewed & agreed & committed | `52b152d` |
 | 4. Implementation Planning | `my-app/impl-plan.md` | ⏳ Not started | — |
 | 5. Implementation | (source diffs) | ⏳ Not started | — |
 | 6. Code Review | `my-app/code-review.md` | ⏳ Not started | — |
@@ -36,6 +36,28 @@
   so it doesn't surprise verification against the story's literal AC text.
   **Update:** carried into `architecture.md` §8 as an explicit Design
   Review risk, so it's now tracked in two places by design — not lost.
+  **Resolved at Stage 3 (2026-09-12):** re-confirmed with human as a
+  binding decision, not just a note for later — FR-7 stands
+  (whitespace-only → `Uncategorized`). See `my-app/design-review.md` §2/§3.
+  Implementation and Code Review should treat this as settled.
+
+- **Design Review must-address items resolved into `architecture.md`
+  (2026-09-12):** input type-checking added — non-string `name`/`category`
+  (body) and non-string `category` (query param) must be rejected with
+  `400` before any `.trim()`/comparison, to avoid uncaught-exception `500`s
+  on malformed input (ties to NFR-4). See `architecture.md` §3/§4/§6 and
+  `my-app/design-review.md` §2 finding.
+
+- **Design Review should-note items, deferred (not architecture.md
+  changes), for Stage 4/5/6 to carry forward:**
+  1. Migration-startup failure behavior (fail-fast recommended, not yet
+     coded) — see `design-review.md` §2.
+  2. NFR-1 (200ms/10k items) needs an explicit load-test plan (seed
+     script + timing), separate from Playwright UI specs — must be
+     planned at Stage 4.
+  3. The "All" filter sentinel is client-only (omit the `category` param);
+     the server must never special-case a literal `"All"` string — keep
+     this in mind during Stage 5 implementation.
 
 ## Enforcement
 
@@ -55,6 +77,15 @@ when `architecture.md` was authored outside a live Claude Code session; the
 marker had to be consumed manually afterward to keep the audit trail
 correct. In a real `claude` CLI/VS Code session (as used for Stage 1), this
 does not occur — `Write`/`Edit` always go through the hook.
+
+**Recurred at Stage 3 (2026-09-12):** both the `architecture` marker (across
+4 `Edit` calls revising `architecture.md`) and the `design-review` marker
+(one `Write` call for `design-review.md`) were left un-consumed after
+otherwise-successful writes in this session, and were removed manually
+immediately after to keep the audit trail accurate. Content of both writes
+was verified correct via `git diff`/read-back before commit — this caveat
+affects marker bookkeeping only, not the human-approval requirement itself
+(approval was still obtained and content still matches what was approved).
 
 ## Notes for whoever/whatever picks this up next
 
