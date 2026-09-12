@@ -182,3 +182,70 @@ test('a repeated category query param (array) on GET is rejected with 400, not a
   const res = await request.get('/api/items?category=A&category=B');
   expect(res.status()).toBe(400);
 });
+
+// Stage 7 (Verification) traceability gaps: FR-2, FR-4, FR-8/NFR-3 had no
+// direct test coverage despite being implemented. Added here as Test
+// Evidence ahead of the PR.
+
+// FR-2: category matching is case-insensitive for filtering.
+test('filtering by category matches case-insensitively', async ({ page }) => {
+  await page.goto('/');
+  const name = unique('FR2-Item');
+  const category = `FR2-Cat-${Date.now()}-Mixed`;
+
+  await page.fill('input[placeholder="New item name"]', name);
+  await page.fill('input[placeholder="Category (optional)"]', category);
+  await page.click('button:has-text("Add")');
+  await expect(page.locator('li', { hasText: name })).toBeVisible();
+
+  const res = await page.request.get(`/api/items?category=${encodeURIComponent(category.toUpperCase())}`);
+  const data = await res.json();
+  expect(data.find((item) => item.name === name)?.category).toBe(category);
+});
+
+// FR-4: a new item matching the currently active filter appears live,
+// without a manual reload, once added.
+test('adding an item that matches the active filter appears without a manual reload', async ({ page }) => {
+  await page.goto('/');
+  const firstName = unique('FR4-First');
+  const secondName = unique('FR4-Second');
+  const category = unique('FR4-Cat');
+
+  await page.fill('input[placeholder="New item name"]', firstName);
+  await page.fill('input[placeholder="Category (optional)"]', category);
+  await page.click('button:has-text("Add")');
+  await expect(page.locator('li', { hasText: firstName })).toBeVisible();
+
+  await page.selectOption('#category-filter', category);
+  await expect(page.locator('li', { hasText: firstName })).toBeVisible();
+
+  // Filter stays active while a second matching item is added.
+  await page.fill('input[placeholder="New item name"]', secondName);
+  await page.fill('input[placeholder="Category (optional)"]', category);
+  await page.click('button:has-text("Add")');
+
+  await expect(page.locator('li', { hasText: secondName })).toBeVisible();
+  await expect(page.locator('#category-filter')).toHaveValue(category);
+});
+
+// FR-8/NFR-3: a row lacking an explicit category (as any row created before
+// this feature shipped would be) is backfilled to "Uncategorized" by the
+// column's DEFAULT constraint, not application code — inserted directly
+// against SQLite to bypass the API's own explicit category assignment.
+test('a pre-existing row without an explicit category is backfilled to Uncategorized', async ({ request }) => {
+  const sqlite3 = require(require('path').join(__dirname, '..', 'server', 'node_modules', 'sqlite3')).verbose();
+  const dbPath = require('path').join(__dirname, '..', 'server', 'db', 'app.db');
+  const name = unique('FR8-PreExisting');
+
+  await new Promise((resolve, reject) => {
+    const db = new sqlite3.Database(dbPath);
+    db.run('INSERT INTO items (name) VALUES (?)', [name], (err) => {
+      db.close();
+      err ? reject(err) : resolve();
+    });
+  });
+
+  const res = await request.get('/api/items?category=Uncategorized');
+  const data = await res.json();
+  expect(data.find((item) => item.name === name)?.category).toBe('Uncategorized');
+});
