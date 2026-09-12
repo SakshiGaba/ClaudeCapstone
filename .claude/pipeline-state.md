@@ -14,7 +14,7 @@
 | 1. Requirements | `my-app/requirements.md` | ✅ Complete — clarified & committed | `1e87fcb` |
 | 2. Architecture | `my-app/architecture.md` | ✅ Complete — confirmed, committed, revised per Design Review | `f13efd2`, revised `52b152d` |
 | 3. Design Review | `my-app/design-review.md` | ✅ Complete — reviewed & agreed & committed | `52b152d` |
-| 4. Implementation Planning | `my-app/impl-plan.md` | ✅ Complete — confirmed & committed | (recorded below after commit) |
+| 4. Implementation Planning | `my-app/impl-plan.md` | ✅ Complete — confirmed & committed | `ada9a6d` |
 | 5. Implementation | (source diffs) | ⏳ Not started — task list ready: T1-T12, see `impl-plan.md` §2 | — |
 | 6. Code Review | `my-app/code-review.md` | ⏳ Not started | — |
 | 7. Verification | test run output | ⏳ Not started | — |
