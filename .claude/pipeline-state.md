@@ -4,7 +4,7 @@
 > a stage. This is the single source of truth for "where are we."
 
 **Active story:** ITEMS-101 — Categorize and Filter Items
-**Current stage:** 5 — Implementation (in progress — T1-T6 done, T7 unblocked next)
+**Current stage:** 5 — Implementation (in progress — T1-T11 done, T12 unblocked next)
 **Last completed stage:** 4 — Implementation Planning
 
 ## Stage log
@@ -15,12 +15,25 @@
 | 2. Architecture | `my-app/architecture.md` | ✅ Complete — confirmed, committed, revised per Design Review | `f13efd2`, revised `52b152d` |
 | 3. Design Review | `my-app/design-review.md` | ✅ Complete — reviewed & agreed & committed | `52b152d` |
 | 4. Implementation Planning | `my-app/impl-plan.md` | ✅ Complete — confirmed & committed | `ada9a6d` |
-| 5. Implementation | (source diffs) | 🔄 In progress — T1-T6 done, T7-T12 remaining, see `impl-plan.md` §2 | `48108be` (T1), `37a9b0d` (T2), `0227677` (T3), `064dac1` (T4), `4aa9362` (T5), `bbcf503` (T6) |
+| 5. Implementation | (source diffs) | 🔄 In progress — T1-T11 done, T12 remaining, see `impl-plan.md` §2 | `48108be` (T1), `37a9b0d` (T2), `0227677` (T3), `064dac1` (T4), `4aa9362` (T5), `bbcf503` (T6), `3280893` (T7), `7a8a500` (T8), `c2a1cb7` (T9), `e5253d8` (T10), `e85a4f2` (T11) |
 | 6. Code Review | `my-app/code-review.md` | ⏳ Not started | — |
 | 7. Verification | test run output | ⏳ Not started | — |
 | 8. PR | PR description | ⏳ Not started | — |
 
 ## Open items carried forward
+
+- **Pre-existing Playwright flake observed during T8-T11 testing (2026-09-12):**
+  the original `can delete an item` test (predates this story, unmodified)
+  failed once out of three full-suite runs of `npx playwright test`
+  (`fullyParallel: true`, 4 workers, all hitting the same shared SQLite
+  file at `server/db/app.db`). Re-run in isolation (`--repeat-each=5`) it
+  passed 5/5, and the two other full-suite runs were 13/13 green — points
+  to worker/DB contention under load rather than a defect in any
+  T1-T11 code. Not fixed as part of T8-T11 (out of their scope — the test
+  itself wasn't touched), but flagging here so Stage 7 (Verification)
+  doesn't get a surprise red run and knows to either accept it as a known
+  flake or address it (e.g. serialize DB-touching tests, or give the
+  Playwright config a retry).
 
 - **T5 filter-dropdown option-list quirk — resolved at T6 (2026-09-12):**
   T5's `filterOptions` was derived only from currently-loaded `items`. When
@@ -143,12 +156,12 @@ is the actual backstop here, not the hook.
 | T4 — client category input | ✅ Done | `064dac1` |
 | T5 — client filter dropdown | ✅ Done | `4aa9362` |
 | T6 — client empty state | ✅ Done | `bbcf503` |
-| T7 — client delete-under-filter | ⏳ Not started — unblocked, ready next (depends on T5, T6) | — |
-| T8 — Playwright add-with/without-category | ⏳ Not started (depends on T4) | — |
-| T9 — Playwright filter/empty-state | ⏳ Not started (depends on T6) | — |
-| T10 — Playwright delete-under-filter | ⏳ Not started (depends on T7) | — |
-| T11 — Playwright invalid-input coverage | ⏳ Not started (depends on T2, T3) | — |
-| T12 — load-test script (blocks Stage 8 PR) | ⏳ Not started (depends on T1, T3) | — |
+| T7 — client delete-under-filter | ✅ Done (no code change needed — already satisfied by T5's loadItems default param) | `3280893` |
+| T8 — Playwright add-with/without-category | ✅ Done | `7a8a500` |
+| T9 — Playwright filter/empty-state | ✅ Done | `c2a1cb7` |
+| T10 — Playwright delete-under-filter | ✅ Done | `e5253d8` |
+| T11 — Playwright invalid-input coverage | ✅ Done | `e85a4f2` |
+| T12 — load-test script (blocks Stage 8 PR) | ⏳ Not started — unblocked, ready next (depends on T1, T3) | — |
 
 ## Notes for whoever/whatever picks this up next
 
