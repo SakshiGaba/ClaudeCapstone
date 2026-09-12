@@ -27,10 +27,19 @@ session in this repo before deciding what to do next.
 
 ## Ground rules for every stage
 
-- **Human-in-the-loop is mandatory.** Every stage that produces or changes a
-  scope-defining artifact (requirements, architecture, plan) must pause and
-  ask the human clarifying questions *before* writing the artifact, if the
-  input is ambiguous or underspecified. Do not silently assume.
+- **Human-in-the-loop is mandatory — and technically enforced.** Every stage
+  that produces or changes a scope-defining artifact (requirements,
+  architecture, design review, plan, code review) must pause and ask the
+  human clarifying questions *before* writing the artifact, if the input is
+  ambiguous or underspecified. This isn't just an instruction: a
+  `PreToolUse` hook (`.claude/hooks/check-stage-approval.sh`, wired in
+  `.claude/settings.json`) blocks any Write/Edit to these artifact files
+  unless a fresh, single-use approval marker exists at
+  `.claude/approvals/<stage>.approved`. That marker can only be created via
+  `.claude/scripts/record-approval.sh <stage> "<confirmation text>"`, which
+  requires a non-empty confirmation and is consumed (deleted) the instant it
+  is used — so approval must be re-earned for every write, not granted once
+  and reused.
 - **Auto-generate after unblocked.** Once the human has answered outstanding
   questions for a stage, immediately write the artifact and commit it —
   do not wait for an additional "go ahead" prompt for that same stage.
@@ -50,6 +59,16 @@ session in this repo before deciding what to do next.
 - **Tests:** Playwright (`my-app/tests/`)
 - Existing API: `GET /api/health`, `GET /api/items`, `POST /api/items`,
   `DELETE /api/items/:id`
+
+## Enforcement layer (hooks)
+
+- `.claude/settings.json` — registers the `PreToolUse` hook for Write/Edit.
+- `.claude/hooks/check-stage-approval.sh` — the gate itself; maps artifact
+  file paths to stages and blocks (exit 2) unless that stage's approval
+  marker exists, consuming it on success.
+- `.claude/scripts/record-approval.sh` — the only supported way to create an
+  approval marker; rejects empty confirmations and unrecognized stages.
+- `.claude/approvals/` — holds the (gitignored, ephemeral) marker files.
 
 ## Orchestrator
 
