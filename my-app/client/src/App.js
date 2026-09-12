@@ -22,10 +22,11 @@ function App() {
       .catch(() => setLoading(false));
   };
 
-  const filterOptions = useMemo(
-    () => Array.from(new Set(items.map((item) => item.category))).sort(),
-    [items]
-  );
+  const filterOptions = useMemo(() => {
+    const categories = new Set(items.map((item) => item.category));
+    if (filter !== 'All') categories.add(filter);
+    return Array.from(categories).sort();
+  }, [items, filter]);
 
   useEffect(() => {
     loadItems();
@@ -95,7 +96,11 @@ function App() {
       {loading ? (
         <p>Loading...</p>
       ) : items.length === 0 ? (
-        <p>No items yet. Add one above.</p>
+        filter !== 'All' ? (
+          <p>No items in this category.</p>
+        ) : (
+          <p>No items yet. Add one above.</p>
+        )
       ) : (
         <ul className="item-list">
           {items.map((item) => (
