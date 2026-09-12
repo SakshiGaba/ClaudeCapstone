@@ -96,6 +96,20 @@ Read `requirements.md`, `architecture.md`, `design-review.md`,
   Playwright flake" note from Stage 5 — see §1 above for its final
   characterization and the agreed `retries: 1` mitigation.
 
+**Addendum (found after this report was first written):** the original
+"Document Consistency Check" above only cross-checked the 5 SDLC pipeline
+documents against each other — it did not check the actual user-facing
+`my-app/README.md` against what was shipped. On a closer re-read of Stage
+7's own instruction ("verify... the final output document"), the README's
+"API endpoints" table was found stale: it still listed the pre-story
+endpoints with no mention of `category` on `POST`, the `?category=` filter
+on `GET`, or the new item shape. It also didn't mention the new
+`server/scripts/load-test.js`. **Fixed:** the endpoints table, item shape,
+project-structure diagram, and a new "Load testing" section were all
+updated to match the shipped feature. This is logged here rather than
+silently amended, since it's a real gap in the original verification pass,
+not a cosmetic tidy-up.
+
 ## 5. Known Limitations (carries into Stage 8's PR description)
 
 - **`server` dependency audit:** 1 critical + 4 high vulnerabilities in the
