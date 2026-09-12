@@ -67,85 +67,59 @@
   T12 (load-test, gated on T1+T3, blocks Stage 8). Full detail, file
   paths, and acceptance criteria in `my-app/impl-plan.md` §2-3.
 
-## Enforcement
+## Enforcement — final status (2026-09-12)
 
-Stage approval is now a technical gate, not just an instruction: see
-`.claude/hooks/check-stage-approval.sh` (PreToolUse hook, wired in
-`.claude/settings.json`) and `.claude/scripts/record-approval.sh`. Tested
-2026-09-12: blocks unapproved writes (exit 2), allows exactly once after a
-valid `record-approval.sh` call, re-blocks immediately after (single-use),
-and passes through non-gated files/tools untouched.
+A `PreToolUse` hook (`.claude/hooks/check-stage-approval.sh`, registered in
+`.claude/settings.json`) was built to make stage approval a technical gate,
+not just an instruction, for the 5 scope-defining artifacts
+(`requirements.md`, `architecture.md`, `design-review.md`, `impl-plan.md`,
+`code-review.md`). **Investigation across Stages 1-4 concluded it does not
+actually fire in this human's `claude` CLI environment (Windows/MSYS2),
+in any permission mode.** Summary of the investigation, in order:
 
-**Important caveat found during Stage 2 (2026-09-12):** the hook only fires
-when *Claude Code's own* `Write`/`Edit` tools are used. A sandbox/script
-that writes the file through a different mechanism (e.g. a generic
-file-creation tool outside Claude Code) will not trigger `PreToolUse` and
-will not consume the marker automatically — this was observed firsthand
-when `architecture.md` was authored outside a live Claude Code session; the
-marker had to be consumed manually afterward to keep the audit trail
-correct. In a real `claude` CLI/VS Code session (as used for Stage 1), this
-does not occur — `Write`/`Edit` always go through the hook.
+1. Hook script logic itself: verified correct via 6+ direct manual
+   invocations — blocks with no marker, allows-and-consumes with a valid
+   marker, re-blocks after consumption, passes through non-gated
+   files/tools untouched.
+2. First real bug found and fixed: the original script shelled out to
+   `python3` for JSON parsing with the failure silently swallowed. On this
+   machine `python3` is a non-functional Windows Store alias stub, so
+   parsing failed, and the script incorrectly **failed open** (allowed the
+   write) instead of closed. Fixed by trying `node` first (this is a
+   Node.js project), then `python3`/`python`, and failing **closed**
+   (block, exit 2) if none work. Verified with a deliberately-empty-PATH
+   test that this now correctly blocks.
+3. Even after that fix, markers were still not being consumed on real
+   Write/Edit calls in live sessions (Stages 3 and 4). Ruled out via
+   `/hooks`: the hook **is** correctly registered (event `PreToolUse`,
+   matcher `Write|Edit`, correct command, sourced from
+   `.claude/settings.json`).
+4. Ruled out "auto mode" (a Claude Code permission mode) short-circuiting
+   the hook's decision: switched explicitly to **manual mode** and
+   deliberately attempted an unapproved edit to `architecture.md`. It
+   still succeeded, with **zero** hook output of any kind (not even a
+   swallowed error) — meaning the hook is not being invoked by Claude
+   Code's runtime at all in this session, in any mode, not that it's being
+   invoked and its decision overridden.
 
-**Recurred at Stage 3 (2026-09-12):** both the `architecture` marker (across
-4 `Edit` calls revising `architecture.md`) and the `design-review` marker
-(one `Write` call for `design-review.md`) were left un-consumed after
-otherwise-successful writes in this session, and were removed manually
-immediately after to keep the audit trail accurate. Content of both writes
-was verified correct via `git diff`/read-back before commit — this caveat
-affects marker bookkeeping only, not the human-approval requirement itself
-(approval was still obtained and content still matches what was approved).
+**Conclusion:** this is a platform-level gap in this specific Claude Code
+installation — plausibly a Windows/MSYS2 subprocess-spawning issue when
+Claude Code's own runtime (not the human) tries to invoke the hook command
+— not something fixable by any change to this repository. Recommended:
+report to Anthropic via in-app feedback.
 
-**ROOT CAUSE FOUND AND FIXED (2026-09-12):** the earlier "VS Code extension
-doesn't read settings.json" theory was **wrong** — the human confirmed
-Stages 2-3 were run via a genuine `claude` CLI session in a real terminal
-(they typed `claude` and pressed enter themselves). The actual bug: the
-hook script's JSON parsing shelled out to `python3` with
-`2>/dev/null || echo ""` swallowing any failure. On the human's machine
-(Windows, MSYS2 bash), `python3` resolves to a Microsoft Store alias stub,
-not a real interpreter — so parsing silently failed, `TOOL_NAME` came back
-empty, the `if [[ "$TOOL_NAME" != "Write" && "$TOOL_NAME" != "Edit" ]]`
-check treated that as "not a gated tool," and the script exited 0
-(**allowed**) before ever checking the approval marker. This is a **fail-open**
-bug in a component whose entire job is to fail closed.
-
-**Fix shipped:** `check-stage-approval.sh` rewritten to try `node` first
-(this is a Node.js project — node is expected to be present in any dev
-environment for it), then `python3`, then `python`, and if **none** parse
-successfully, the hook now explicitly **blocks (exit 2)** with a clear error
-telling the human to install Node or Python — it no longer silently no-ops.
-Re-verified with 6 test cases including a deliberately empty-PATH
-simulation of "no interpreter available," which now correctly fails closed
-instead of allowing the write. **Action for the human:** pull this fix,
-re-run the same manual diagnostic (`echo '{...}' | bash
-.claude/hooks/check-stage-approval.sh`) to confirm `node` is found and used
-on your machine, then retry a real Write/Edit in a `claude` session to
-confirm the block is now visible.
-
-**New finding at Stage 4 (2026-09-12) — this is NOT the python3 bug
-recurring, it's a different gap:** in *this* session, the `plan.approved`
-marker was again left un-consumed after a successful `Write` to
-`my-app/impl-plan.md`. Isolated the cause by invoking the hook script
-directly (not through the tool call) with the exact same absolute file
-path and an empty approvals dir: it correctly printed `BLOCKED` and
-returned exit code 2. So the hook script itself is correct and does fail
-closed — the problem is that the `PreToolUse` hook is **not being invoked
-at all** for `Write`/`Edit` calls in this particular session/harness (if it
-had fired and allowed via the marker-exists path, the marker would have
-been deleted; it wasn't — meaning the hook's code never ran, not that it
-ran and passed). This is distinct from both earlier issues: it's not a
-JSON-parsing failure (the script's own logic is sound) and it's not the
-disproven "VS Code doesn't read settings.json" theory either, since that
-was specifically checked against the human's own terminal session, not
-this one. Whatever is driving this conversation (agent harness / SDK
-session, as opposed to an interactive terminal `claude` invocation)
-appears not to wire up project `PreToolUse` hooks the same way. **This is
-outside what can be fixed by editing repo files** — it's an invocation
-difference in the environment running this session. Flagging for the
-human's awareness; every gated write in this session has still been
-individually approved via `record-approval.sh` first and manually verified
-against the approved content before commit, so the *human-approval*
-requirement has been honored throughout even though the *technical*
-enforcement hasn't been firing here.
+**What actually holds the line going forward:** every command file's
+Phase B/C/D procedure (ask the human real questions → wait for a real
+answer → call `record-approval.sh <stage> "<confirmation>"`, which itself
+rejects empty/bogus input → then write → commit) has been followed
+correctly and verifiably in all 4 completed stages: every artifact's
+content traces back to an actual human decision made in the conversation,
+never silently assumed. **This is the real safeguard in this environment —
+instruction-following plus an auditable approval-script call, not a tool-
+call-level block.** Stage 5 (Implementation) and beyond should continue
+following each command's approval procedure exactly as written, and the
+human should keep reading what gets written/committed, since that review
+is the actual backstop here, not the hook.
 
 ## Notes for whoever/whatever picks this up next
 

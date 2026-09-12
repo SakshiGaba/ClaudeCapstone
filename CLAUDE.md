@@ -27,19 +27,24 @@ session in this repo before deciding what to do next.
 
 ## Ground rules for every stage
 
-- **Human-in-the-loop is mandatory — and technically enforced.** Every stage
-  that produces or changes a scope-defining artifact (requirements,
-  architecture, design review, plan, code review) must pause and ask the
-  human clarifying questions *before* writing the artifact, if the input is
-  ambiguous or underspecified. This isn't just an instruction: a
-  `PreToolUse` hook (`.claude/hooks/check-stage-approval.sh`, wired in
-  `.claude/settings.json`) blocks any Write/Edit to these artifact files
-  unless a fresh, single-use approval marker exists at
-  `.claude/approvals/<stage>.approved`. That marker can only be created via
-  `.claude/scripts/record-approval.sh <stage> "<confirmation text>"`, which
-  requires a non-empty confirmation and is consumed (deleted) the instant it
-  is used — so approval must be re-earned for every write, not granted once
-  and reused.
+- **Human-in-the-loop is mandatory.** Every stage that produces or changes
+  a scope-defining artifact (requirements, architecture, design review,
+  plan, code review) must pause and ask the human clarifying questions
+  *before* writing the artifact, if the input is ambiguous or
+  underspecified. A `PreToolUse` hook (`.claude/hooks/check-stage-approval.sh`,
+  wired in `.claude/settings.json`) was built to make this a technical gate
+  rather than just an instruction — but **confirmed via extensive testing
+  (see `.claude/pipeline-state.md` "Enforcement" section) that it does not
+  actually fire in this environment's `claude` CLI, in any permission
+  mode**, despite being correctly registered and correctly written. Treat
+  it as a best-effort defense that may or may not engage depending on your
+  Claude Code installation — the actual operative safeguard is that every
+  command's Phase B/C/D procedure must still be followed by instruction:
+  ask real questions, wait for a real human answer, call
+  `record-approval.sh <stage> "<confirmation>"` (which itself rejects
+  empty/bogus input, giving at least an auditable trail), then write. The
+  human should read what gets written before it's committed — that review
+  is the real backstop in this environment, not the hook.
 - **Auto-generate after unblocked.** Once the human has answered outstanding
   questions for a stage, immediately write the artifact and commit it —
   do not wait for an additional "go ahead" prompt for that same stage.
