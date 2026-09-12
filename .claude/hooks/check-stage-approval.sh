@@ -108,6 +108,7 @@ case "$FILE_PATH" in
   */my-app/design-review.md)  STAGE="design-review" ;;
   */my-app/impl-plan.md)      STAGE="plan" ;;
   */my-app/code-review.md)    STAGE="code-review" ;;
+  */my-app/verification-report.md) STAGE="verify" ;;
   *) exit 0 ;;  # not a gated artifact — allow normally
 esac
 

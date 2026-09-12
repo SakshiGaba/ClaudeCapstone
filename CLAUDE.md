@@ -18,7 +18,7 @@ Project under management: `my-app/` (React + Express + SQLite items app).
 | 4 | Implementation Planning | `my-app/impl-plan.md` | `/plan` | ✅ implemented |
 | 5 | Implementation | source diffs | `/implement` | ✅ implemented |
 | 6 | Code Review | `my-app/code-review.md` | `/code-review` | ✅ implemented |
-| 7 | Verification | test run output | `/verify` | ⏳ not yet built |
+| 7 | Verification | `my-app/verification-report.md` | `/verify` | ✅ implemented |
 | 8 | PR | PR description | `/open-pr` | ⏳ not yet built |
 
 Live pipeline state (which stage is current, what's been approved) is tracked
