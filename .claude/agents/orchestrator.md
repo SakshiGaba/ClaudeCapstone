@@ -51,9 +51,12 @@ state-tracking, and delegation.
   proposes components/data flow/tech choices (confirming only genuinely open
   design decisions with the human, not re-asking settled scope), writes
   `my-app/architecture.md`.
-- **Design Review** (`/design-review`) — not yet implemented. Will critique
-  `my-app/architecture.md` as a senior reviewer, output
-  `my-app/design-review.md`, and may amend the architecture doc.
+- **Design Review** (`/design-review`) — implemented. Critiques
+  `my-app/architecture.md` as a senior reviewer across correctness,
+  security, error handling, data integrity, performance, consistency,
+  testability, and maintainability; agrees findings with the human; writes
+  `my-app/design-review.md`; may revise `architecture.md` under a separate
+  approval if issues require it.
 - **Implementation Planning** (`/plan`) — not yet implemented. Will turn the
   approved architecture into a dependency-ordered task list in
   `my-app/impl-plan.md`.

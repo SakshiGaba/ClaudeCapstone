@@ -14,7 +14,7 @@ Project under management: `my-app/` (React + Express + SQLite items app).
 |---|---|---|---|---|
 | 1 | Requirements | `my-app/requirements.md` | `/requirements` | ✅ implemented |
 | 2 | Architecture | `my-app/architecture.md` | `/architecture` | ✅ implemented |
-| 3 | Design Review | `my-app/design-review.md` | `/design-review` | ⏳ not yet built |
+| 3 | Design Review | `my-app/design-review.md` | `/design-review` | ✅ implemented |
 | 4 | Implementation Planning | `my-app/impl-plan.md` | `/plan` | ⏳ not yet built |
 | 5 | Implementation | source diffs | (main agent loop) | ⏳ not yet built |
 | 6 | Code Review | review notes / `my-app/code-review.md` | `/code-review` | ⏳ not yet built |
