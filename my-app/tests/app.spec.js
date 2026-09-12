@@ -122,3 +122,24 @@ test('filtering to a category with zero matching items shows the empty-state mes
   await expect(page.getByText('No items in this category.')).toBeVisible();
   await expect(page.locator('.item-list')).toHaveCount(0);
 });
+
+// T10: deleting the last item in an active filtered view
+test('deleting the last item in an active filtered view keeps the filter and shows the empty state', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const name = unique('T10-Item');
+  const category = unique('T10-Cat');
+
+  await page.fill('input[placeholder="New item name"]', name);
+  await page.fill('input[placeholder="Category (optional)"]', category);
+  await page.click('button:has-text("Add")');
+
+  await page.selectOption('#category-filter', category);
+  await expect(page.locator('li', { hasText: name })).toBeVisible();
+
+  await page.locator('li', { hasText: name }).locator('button:has-text("Delete")').click();
+
+  await expect(page.getByText('No items in this category.')).toBeVisible();
+  await expect(page.locator('#category-filter')).toHaveValue(category);
+});
