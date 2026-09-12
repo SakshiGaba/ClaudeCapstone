@@ -4,7 +4,7 @@
 > a stage. This is the single source of truth for "where are we."
 
 **Active story:** ITEMS-101 — Categorize and Filter Items
-**Current stage:** 5 — Implementation (in progress — T1-T5 done, T6 unblocked next)
+**Current stage:** 5 — Implementation (in progress — T1-T6 done, T7 unblocked next)
 **Last completed stage:** 4 — Implementation Planning
 
 ## Stage log
@@ -15,23 +15,24 @@
 | 2. Architecture | `my-app/architecture.md` | ✅ Complete — confirmed, committed, revised per Design Review | `f13efd2`, revised `52b152d` |
 | 3. Design Review | `my-app/design-review.md` | ✅ Complete — reviewed & agreed & committed | `52b152d` |
 | 4. Implementation Planning | `my-app/impl-plan.md` | ✅ Complete — confirmed & committed | `ada9a6d` |
-| 5. Implementation | (source diffs) | 🔄 In progress — T1-T5 done, T6-T12 remaining, see `impl-plan.md` §2 | `48108be` (T1), `37a9b0d` (T2), `0227677` (T3), `064dac1` (T4), `4aa9362` (T5) |
+| 5. Implementation | (source diffs) | 🔄 In progress — T1-T6 done, T7-T12 remaining, see `impl-plan.md` §2 | `48108be` (T1), `37a9b0d` (T2), `0227677` (T3), `064dac1` (T4), `4aa9362` (T5), `bbcf503` (T6) |
 | 6. Code Review | `my-app/code-review.md` | ⏳ Not started | — |
 | 7. Verification | test run output | ⏳ Not started | — |
 | 8. PR | PR description | ⏳ Not started | — |
 
 ## Open items carried forward
 
-- **T5 filter-dropdown option-list quirk (flagged during Stage 5, 2026-09-12):**
-  the category filter's option list is derived from whatever `items` is
-  currently loaded (`my-app/client/src/App.js`). Once a category filter is
-  active, `items` holds only the filtered set, so reopening the dropdown
-  shows only the active category (plus "All") rather than every category
-  that exists. Matches T5's literal wording ("populated from categories
-  present in the currently loaded item set") and needs no new endpoint, but
-  is a minor UX quirk. Human reviewed and accepted T5 as committed without
-  asking for a change — flagging here so Stage 6 (Code Review) doesn't
-  rediscover it as a surprise.
+- **T5 filter-dropdown option-list quirk — resolved at T6 (2026-09-12):**
+  T5's `filterOptions` was derived only from currently-loaded `items`. When
+  T6 (empty state) was implemented and tested, this surfaced as a real
+  FR-5 violation, not just a cosmetic quirk: filtering to a category and
+  then emptying it made the `<select>` visually snap back to "All" (no
+  matching `<option>` left in the DOM), even though the underlying `filter`
+  state and fetched data were still correct for the selected category.
+  Fixed as part of T6's commit (`bbcf503`) per human decision: `filterOptions`
+  now always unions in the current `filter` value, so the dropdown stays
+  visibly on the selected category even with zero matching items. No
+  longer an open item — noted here for traceability only.
 
 - **Whitespace-only category conflict (found on Stage 1 re-run, 2026-09-12):**
   the source story's AC #7 says a whitespace-only category should be
@@ -141,8 +142,8 @@ is the actual backstop here, not the hook.
 | T3 — GET filter support | ✅ Done | `0227677` |
 | T4 — client category input | ✅ Done | `064dac1` |
 | T5 — client filter dropdown | ✅ Done | `4aa9362` |
-| T6 — client empty state | ⏳ Not started — unblocked, ready next (depends on T5) | — |
-| T7 — client delete-under-filter | ⏳ Not started (depends on T5, T6) | — |
+| T6 — client empty state | ✅ Done | `bbcf503` |
+| T7 — client delete-under-filter | ⏳ Not started — unblocked, ready next (depends on T5, T6) | — |
 | T8 — Playwright add-with/without-category | ⏳ Not started (depends on T4) | — |
 | T9 — Playwright filter/empty-state | ⏳ Not started (depends on T6) | — |
 | T10 — Playwright delete-under-filter | ⏳ Not started (depends on T7) | — |
