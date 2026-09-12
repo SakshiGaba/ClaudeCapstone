@@ -65,6 +65,13 @@ session in this repo before deciding what to do next.
 - Existing API: `GET /api/health`, `GET /api/items`, `POST /api/items`,
   `DELETE /api/items/:id`
 
+## Skills
+
+- `.claude/skills/sdlc-implementation/SKILL.md` — coding conventions
+  (SQLite callback style, validation placement, response shapes) and the
+  required per-task workflow for Stage 5, so implementation of T1-T12 from
+  `impl-plan.md` stays consistent regardless of which session does it.
+
 ## Enforcement layer (hooks)
 
 - `.claude/settings.json` — registers the `PreToolUse` hook for Write/Edit.
