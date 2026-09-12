@@ -1,14 +1,19 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 function App() {
   const [items, setItems] = useState([]);
   const [name, setName] = useState('');
   const [category, setCategory] = useState('');
+  const [filter, setFilter] = useState('All');
   const [loading, setLoading] = useState(true);
   const [addError, setAddError] = useState('');
 
-  const loadItems = () => {
-    fetch('/api/items')
+  const loadItems = (activeFilter = filter) => {
+    const url =
+      activeFilter && activeFilter !== 'All'
+        ? `/api/items?category=${encodeURIComponent(activeFilter)}`
+        : '/api/items';
+    fetch(url)
       .then((r) => r.json())
       .then((data) => {
         setItems(data);
@@ -17,9 +22,21 @@ function App() {
       .catch(() => setLoading(false));
   };
 
+  const filterOptions = useMemo(
+    () => Array.from(new Set(items.map((item) => item.category))).sort(),
+    [items]
+  );
+
   useEffect(() => {
     loadItems();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleFilterChange = (e) => {
+    const value = e.target.value;
+    setFilter(value);
+    loadItems(value);
+  };
 
   const addItem = async (e) => {
     e.preventDefault();
@@ -62,6 +79,18 @@ function App() {
         <button type="submit">Add</button>
       </form>
       {addError && <p className="add-error">{addError}</p>}
+
+      <div className="filter-control">
+        <label htmlFor="category-filter">Filter by category:</label>
+        <select id="category-filter" value={filter} onChange={handleFilterChange}>
+          <option value="All">All</option>
+          {filterOptions.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+      </div>
 
       {loading ? (
         <p>Loading...</p>
