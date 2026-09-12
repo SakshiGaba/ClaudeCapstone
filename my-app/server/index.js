@@ -60,9 +60,17 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-// Get all items
+// Get all items, optionally filtered by category
 app.get('/api/items', (req, res) => {
-  db.all('SELECT * FROM items ORDER BY id DESC', [], (err, rows) => {
+  const { category } = req.query;
+  if (category !== undefined && typeof category !== 'string') {
+    return res.status(400).json({ error: 'Category must be a single string value' });
+  }
+  const sql = category !== undefined
+    ? 'SELECT * FROM items WHERE LOWER(category) = LOWER(?) ORDER BY id DESC'
+    : 'SELECT * FROM items ORDER BY id DESC';
+  const params = category !== undefined ? [category] : [];
+  db.all(sql, params, (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
   });
