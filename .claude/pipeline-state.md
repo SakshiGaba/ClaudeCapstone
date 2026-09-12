@@ -4,8 +4,8 @@
 > a stage. This is the single source of truth for "where are we."
 
 **Active story:** ITEMS-101 — Categorize and Filter Items
-**Current stage:** 7 — Verification (not started)
-**Last completed stage:** 6 — Code Review (fixes applied, agreed & committed)
+**Current stage:** 8 — PR (not started)
+**Last completed stage:** 7 — Verification (3 traceability-gap tests added, flake mitigated, agreed & committed)
 
 ## Stage log
 
@@ -17,36 +17,29 @@
 | 4. Implementation Planning | `my-app/impl-plan.md` | ✅ Complete — confirmed & committed | `ada9a6d` |
 | 5. Implementation | (source diffs) | ✅ Complete — T1-T12 all done | `48108be` (T1), `37a9b0d` (T2), `0227677` (T3), `064dac1` (T4), `4aa9362` (T5), `bbcf503` (T6), `3280893` (T7), `7a8a500` (T8), `c2a1cb7` (T9), `e5253d8` (T10), `e85a4f2` (T11), `9565b9c` (T12) |
 | 6. Code Review | `my-app/code-review.md` | ✅ Complete — reviewed, 2 must-fix items agreed & fixed, committed | `64e4948` (fix), `764bc4d` (code-review.md) |
-| 7. Verification | test run output | ⏳ Not started — current stage | — |
-| 8. PR | PR description | ⏳ Not started | — |
+| 7. Verification | `my-app/verification-report.md` | ✅ Complete — 8 full-suite runs, 3 traceability-gap tests added, flake mitigated with `retries: 1` | `e2bd89a` (tests+config), `5facad8` (verification-report.md + DoD) |
+| 8. PR | PR description | ⏳ Not started — current stage | — |
 
 ## Open items carried forward
 
-- **Stale `server/db/app.db` from T12's load-test causes real Playwright
-  failures, not just a flake (found during Stage 6 code review, 2026-09-12):**
-  a leftover DB from a prior `load-test.js` run (10,013 items) was still
-  present when the full suite was re-run in this session. With that many
-  `<li>` rows rendered, `toBeVisible` locator waits on 5 of 13 tests timed
-  out consistently (reproduced twice) — not the intermittent DB-contention
-  flake logged below. Deleted the (gitignored, regenerated-at-startup)
-  `server/db/app.db` and reran: 13/13 passed cleanly. `server/db/*.db` is
-  gitignored so this isn't tracked/committed either way, but **Stage 7
-  (Verification) should start from a fresh/reset DB (or delete
-  `server/db/app.db` before running `npx playwright test`)**, especially
-  right after T12's load-test has been run, to avoid a false-red suite.
+- **Stale `server/db/app.db` from T12's load-test — resolved at Stage 7
+  (2026-09-12):** confirmed at Stage 6 that a leftover load-test DB
+  (10k+ items) causes real (non-flaky) Playwright failures via slow/timed-out
+  `<li>` locator waits, not the contention flake below. Stage 7 started every
+  run from a freshly reset DB per this note; no longer an open item, but
+  worth remembering for any future full-suite run made shortly after
+  `load-test.js` has been run.
 
-- **Pre-existing Playwright flake observed during T8-T11 testing (2026-09-12):**
-  the original `can delete an item` test (predates this story, unmodified)
-  failed once out of three full-suite runs of `npx playwright test`
-  (`fullyParallel: true`, 4 workers, all hitting the same shared SQLite
-  file at `server/db/app.db`). Re-run in isolation (`--repeat-each=5`) it
-  passed 5/5, and the two other full-suite runs were 13/13 green — points
-  to worker/DB contention under load rather than a defect in any
-  T1-T11 code. Not fixed as part of T8-T11 (out of their scope — the test
-  itself wasn't touched), but flagging here so Stage 7 (Verification)
-  doesn't get a surprise red run and knows to either accept it as a known
-  flake or address it (e.g. serialize DB-touching tests, or give the
-  Playwright config a retry).
+- **Pre-existing Playwright worker/DB-contention flake — characterized and
+  mitigated at Stage 7 (2026-09-12):** the original `can delete an item`
+  test (predates this story, unmodified by any T1-T12 commit) failed
+  intermittently across repeated full-suite runs (~1-in-8 observed rate
+  across 8 runs total this stage, consistent with Stage 5's ~1-in-3
+  observation) — `fullyParallel: true` workers contending on the single
+  shared SQLite file, not a defect in any T1-T12/verification code. Agreed
+  with human: added `retries: 1` to `playwright.config.js` (commit
+  `e2bd89a`) as a low-risk mitigation. 3 clean 16/16 runs confirmed since.
+  No longer open — see `my-app/verification-report.md` §1 for full detail.
 
 - **T5 filter-dropdown option-list quirk — resolved at T6 (2026-09-12):**
   T5's `filterOptions` was derived only from currently-loaded `items`. When
@@ -175,6 +168,31 @@ is the actual backstop here, not the hook.
 | T10 — Playwright delete-under-filter | ✅ Done | `e5253d8` |
 | T11 — Playwright invalid-input coverage | ✅ Done | `e85a4f2` |
 | T12 — load-test script (blocks Stage 8 PR) | ✅ Done — measured avg 142-146ms unfiltered / 26-28ms filtered at 10k items, both under the 200ms NFR-1 threshold | `9565b9c` |
+
+## Known Limitations (from Stage 7, carry directly into Stage 8's PR)
+
+- `server` npm audit: 1 critical + 4 high vulns, all in `sqlite3`'s
+  build-time native-addon compile chain (`tar`/`node-gyp`/
+  `make-fetch-happen`), not runtime; fix requires breaking `sqlite3` bump.
+  Plus 1 moderate `qs`/`express` runtime vuln with a non-breaking
+  `npm audit fix` available, not applied in this story's scope.
+- `client` npm audit: 30 vulns, all in `react-scripts` build/dev tooling;
+  shipped `react`/`react-dom` runtime deps have 0 findings. Standard CRA
+  ecosystem debt, not addressed.
+- DRY duplication (non-blocking): `category` type-check duplicated between
+  `GET`/`POST` handlers in `server/index.js`; schema-migration logic
+  duplicated (deliberately) between `server/index.js` and
+  `server/scripts/load-test.js`.
+- No Playwright spec for `DELETE` of a non-existent item ID (behavior is
+  graceful, just untested; not required by NFR-4's enumerated list).
+- Concurrent-boot migration safety: startup `ALTER TABLE` check assumes
+  single-instance deployment; accepted architectural risk, not fixed
+  (see `architecture.md` §8, `design-review.md` §3).
+- Playwright worker/DB-contention flake on `can delete an item`: mitigated
+  with `retries: 1`, not eliminated at the root (shared SQLite file across
+  parallel workers).
+
+Full detail and rationale for each: `my-app/verification-report.md` §5.
 
 ## Notes for whoever/whatever picks this up next
 
