@@ -1,0 +1,13 @@
+node_modules/
+**/node_modules/
+server/db/*.db
+**/server/db/*.db
+client/build/
+**/client/build/
+test-results/
+**/test-results/
+playwright-report/
+**/playwright-report/
+.env
+**/.env
+.DS_Store
