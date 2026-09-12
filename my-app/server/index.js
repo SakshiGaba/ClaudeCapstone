@@ -70,14 +70,29 @@ app.get('/api/items', (req, res) => {
 
 // Add a new item
 app.post('/api/items', (req, res) => {
-  const { name } = req.body;
-  if (!name || !name.trim()) {
+  const { name, category } = req.body;
+  if (typeof name !== 'string') {
     return res.status(400).json({ error: 'Name is required' });
   }
-  db.run('INSERT INTO items (name) VALUES (?)', [name.trim()], function (err) {
-    if (err) return res.status(500).json({ error: err.message });
-    res.status(201).json({ id: this.lastID, name: name.trim() });
-  });
+  if (category !== undefined && typeof category !== 'string') {
+    return res.status(400).json({ error: 'Category must be a string' });
+  }
+  if (!name.trim()) {
+    return res.status(400).json({ error: 'Name is required' });
+  }
+  const trimmedCategory = category !== undefined ? category.trim() : '';
+  if (trimmedCategory.length > 50) {
+    return res.status(400).json({ error: 'Category must be 50 characters or fewer' });
+  }
+  const finalCategory = trimmedCategory === '' ? 'Uncategorized' : trimmedCategory;
+  db.run(
+    'INSERT INTO items (name, category) VALUES (?, ?)',
+    [name.trim(), finalCategory],
+    function (err) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.status(201).json({ id: this.lastID, name: name.trim(), category: finalCategory });
+    }
+  );
 });
 
 // Delete an item
