@@ -4,8 +4,8 @@
 > a stage. This is the single source of truth for "where are we."
 
 **Active story:** ITEMS-101 — Categorize and Filter Items
-**Current stage:** 5 — Implementation (in progress — T1-T11 done, T12 unblocked next)
-**Last completed stage:** 4 — Implementation Planning
+**Current stage:** 6 — Code Review (not started)
+**Last completed stage:** 5 — Implementation (T1-T12 all done)
 
 ## Stage log
 
@@ -15,8 +15,8 @@
 | 2. Architecture | `my-app/architecture.md` | ✅ Complete — confirmed, committed, revised per Design Review | `f13efd2`, revised `52b152d` |
 | 3. Design Review | `my-app/design-review.md` | ✅ Complete — reviewed & agreed & committed | `52b152d` |
 | 4. Implementation Planning | `my-app/impl-plan.md` | ✅ Complete — confirmed & committed | `ada9a6d` |
-| 5. Implementation | (source diffs) | 🔄 In progress — T1-T11 done, T12 remaining, see `impl-plan.md` §2 | `48108be` (T1), `37a9b0d` (T2), `0227677` (T3), `064dac1` (T4), `4aa9362` (T5), `bbcf503` (T6), `3280893` (T7), `7a8a500` (T8), `c2a1cb7` (T9), `e5253d8` (T10), `e85a4f2` (T11) |
-| 6. Code Review | `my-app/code-review.md` | ⏳ Not started | — |
+| 5. Implementation | (source diffs) | ✅ Complete — T1-T12 all done | `48108be` (T1), `37a9b0d` (T2), `0227677` (T3), `064dac1` (T4), `4aa9362` (T5), `bbcf503` (T6), `3280893` (T7), `7a8a500` (T8), `c2a1cb7` (T9), `e5253d8` (T10), `e85a4f2` (T11), `9565b9c` (T12) |
+| 6. Code Review | `my-app/code-review.md` | ⏳ Not started — current stage | — |
 | 7. Verification | test run output | ⏳ Not started | — |
 | 8. PR | PR description | ⏳ Not started | — |
 
@@ -161,7 +161,7 @@ is the actual backstop here, not the hook.
 | T9 — Playwright filter/empty-state | ✅ Done | `c2a1cb7` |
 | T10 — Playwright delete-under-filter | ✅ Done | `e5253d8` |
 | T11 — Playwright invalid-input coverage | ✅ Done | `e85a4f2` |
-| T12 — load-test script (blocks Stage 8 PR) | ⏳ Not started — unblocked, ready next (depends on T1, T3) | — |
+| T12 — load-test script (blocks Stage 8 PR) | ✅ Done — measured avg 142-146ms unfiltered / 26-28ms filtered at 10k items, both under the 200ms NFR-1 threshold | `9565b9c` |
 
 ## Notes for whoever/whatever picks this up next
 
