@@ -47,8 +47,9 @@ state-tracking, and delegation.
 
 - **Requirements** (`/requirements`) — implemented. Reads a story doc, asks
   clarifying questions, writes `my-app/requirements.md`.
-- **Architecture** (`/architecture`) — not yet implemented. Will read
-  `my-app/requirements.md` and propose components/data flow/tech choices into
+- **Architecture** (`/architecture`) — implemented. Reads `requirements.md`,
+  proposes components/data flow/tech choices (confirming only genuinely open
+  design decisions with the human, not re-asking settled scope), writes
   `my-app/architecture.md`.
 - **Design Review** (`/design-review`) — not yet implemented. Will critique
   `my-app/architecture.md` as a senior reviewer, output

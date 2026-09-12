@@ -13,7 +13,7 @@ Project under management: `my-app/` (React + Express + SQLite items app).
 | # | Stage | Artifact | Command | Status |
 |---|---|---|---|---|
 | 1 | Requirements | `my-app/requirements.md` | `/requirements` | ✅ implemented |
-| 2 | Architecture | `my-app/architecture.md` | `/architecture` | ⏳ not yet built |
+| 2 | Architecture | `my-app/architecture.md` | `/architecture` | ✅ implemented |
 | 3 | Design Review | `my-app/design-review.md` | `/design-review` | ⏳ not yet built |
 | 4 | Implementation Planning | `my-app/impl-plan.md` | `/plan` | ⏳ not yet built |
 | 5 | Implementation | source diffs | (main agent loop) | ⏳ not yet built |
