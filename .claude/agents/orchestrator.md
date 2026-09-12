@@ -61,8 +61,11 @@ state-tracking, and delegation.
   `my-app/architecture.md` (as revised by Design Review) into a
   dependency-ordered, prioritized task list in `my-app/impl-plan.md`,
   explicitly carrying forward any items `design-review.md` deferred.
-- **Implementation** — not yet implemented as a distinct command; will be the
-  main agent loop guided by `CLAUDE.md` and the impl plan.
+- **Implementation** (`/implement [task-id]`) — implemented. Picks the next
+  unblocked task from `impl-plan.md` (or a named one), follows the
+  `sdlc-implementation` Skill's conventions, implements exactly one task,
+  runs any tests/verification it calls for, and pauses for human review
+  before committing — one task per invocation, never auto-chains.
 - **Code Review** (`/code-review`) — not yet implemented. Will run the fixed
   checklist (correctness, security, error handling, test coverage, clarity,
   DRY, dependency safety) against the diff.
