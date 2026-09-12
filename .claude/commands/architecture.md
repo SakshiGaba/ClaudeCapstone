@@ -12,11 +12,24 @@ writing implementation code and do not re-litigate scope that Stage 1 locked.
 1. Read `my-app/requirements.md` in full (FR-*, NFR-*, out-of-scope). Refuse
    to proceed if it doesn't exist or isn't marked "Finalized after
    clarification" — that means Stage 1 isn't actually done yet.
-2. Read `.claude/pipeline-state.md` for any open items carried forward from
+2. **Check whether `my-app/architecture.md` already exists.** If it does,
+   do not silently regenerate or overwrite it. Read it, then ask the human
+   explicitly which of these they want:
+   - **Re-confirm as-is** — you agree the existing architecture still holds
+     against the current `requirements.md`; nothing is rewritten, no new
+     approval is needed.
+   - **Revise it** — something should change (new requirement, a decision
+     you want to reconsider); proceed through Phases B-D as normal, ending
+     in an overwrite of `architecture.md` gated by a fresh approval marker.
+   - **Show me a fresh proposal to compare, don't commit yet** — walk
+     through Phase B's reasoning as a sanity check/practice run without
+     writing anything.
+   Do not guess which of these the human wants from context alone.
+3. Read `.claude/pipeline-state.md` for any open items carried forward from
    Stage 1 (e.g. story-vs-requirements conflicts) — architecture must design
    to the locked requirements, but should note in the doc when it's aware of
    a carried-forward discrepancy so Stage 6 (Code Review) isn't blindsided.
-3. Read the actual current codebase (`my-app/server/index.js`,
+4. Read the actual current codebase (`my-app/server/index.js`,
    `my-app/client/src/App.js`, `my-app/server/db/`) to understand what
    already exists — architecture should describe a **delta** from the
    current system, not a rewrite from scratch, unless requirements demand
