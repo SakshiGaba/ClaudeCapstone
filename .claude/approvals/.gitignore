@@ -1,5 +1,0 @@
-# Approval markers are ephemeral, single-use, and session-specific.
-# Never commit an actual approval marker to the repo.
-*.approved
-!.gitkeep
-!.gitignore

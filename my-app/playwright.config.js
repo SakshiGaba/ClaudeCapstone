@@ -4,10 +4,6 @@ const { defineConfig, devices } = require('@playwright/test');
 module.exports = defineConfig({
   testDir: './tests',
   fullyParallel: true,
-  // Retry once: fullyParallel workers share one SQLite file, which produces
-  // an occasional contention-driven false-red (see pipeline-state.md), not
-  // a defect in app or test code.
-  retries: 1,
   reporter: 'html',
   use: {
     baseURL: 'http://localhost:3000',

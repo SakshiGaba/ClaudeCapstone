@@ -13,9 +13,7 @@ A simple full-stack project:
 my-app/
 ├── client/          # React frontend (create-react-app style)
 ├── server/          # Express backend
-│   ├── db/          # SQLite database file is created here at runtime
-│   └── scripts/
-│       └── load-test.js  # Seeds 10k items and times GET /api/items (see below)
+│   └── db/          # SQLite database file is created here at runtime
 ├── tests/           # Playwright end-to-end tests
 ├── playwright.config.js
 └── package.json     # root scripts to run everything together
@@ -82,38 +80,14 @@ To view a visual HTML report of the last test run:
 npx playwright show-report
 ```
 
-### Load testing
-
-With the server running (`npm run server` or `npm run dev`), verify
-`GET /api/items` stays under 200ms at 10,000 items:
-
-```bash
-node server/scripts/load-test.js
-```
-
-Seeds the database directly (bypassing the API, so seeding speed doesn't
-affect the measured numbers) and prints average/max response times for
-both a filtered and unfiltered request, exiting non-zero if either exceeds
-the threshold.
-
 ## API endpoints
 
-| Method | Endpoint                        | Description                                                                 |
-|--------|----------------------------------|-------------------------------------------------------------------------------|
-| GET    | /api/health                     | Health check                                                                   |
-| GET    | /api/items                      | List all items                                                                 |
-| GET    | /api/items?category=&lt;value&gt;   | List items filtered to `<value>`, case-insensitive (e.g. `Fruit` matches `fruit`) |
-| POST   | /api/items                      | Add a new item. Body: `{ "name": string, "category"?: string }`. `category` is optional — blank/whitespace-only defaults to `"Uncategorized"`; max 50 characters after trimming. |
-| DELETE | /api/items/:id                  | Delete an item                                                                 |
-
-### Item shape
-
-```json
-{ "id": 1, "name": "Apples", "category": "Fruit" }
-```
-
-`category` defaults to `"Uncategorized"` if omitted. Matching (for filtering) is
-case-insensitive, but the value is stored and returned with its original casing.
+| Method | Endpoint          | Description       |
+|--------|-------------------|--------------------|
+| GET    | /api/health       | Health check       |
+| GET    | /api/items        | List all items     |
+| POST   | /api/items        | Add a new item     |
+| DELETE | /api/items/:id    | Delete an item     |
 
 ## Building for production
 
