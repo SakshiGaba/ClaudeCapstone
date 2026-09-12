@@ -66,9 +66,11 @@ state-tracking, and delegation.
   `sdlc-implementation` Skill's conventions, implements exactly one task,
   runs any tests/verification it calls for, and pauses for human review
   before committing — one task per invocation, never auto-chains.
-- **Code Review** (`/code-review`) — not yet implemented. Will run the fixed
-  checklist (correctness, security, error handling, test coverage, clarity,
-  DRY, dependency safety) against the diff.
+- **Code Review** (`/code-review`) — implemented. Reviews the actual T1-T12
+  implementation (not the architecture) against the fixed 7-area checklist:
+  correctness, security, error handling, test coverage, code clarity, DRY,
+  dependency safety (via `npm audit`). Agrees any must-fix items with the
+  human before applying them; writes `my-app/code-review.md`.
 - **Verification** (`/verify`) — not yet implemented. Will run the test suite
   and a content-quality check on generated docs.
 - **PR** (`/open-pr`) — not yet implemented. Will generate the PR description
