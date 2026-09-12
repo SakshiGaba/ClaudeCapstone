@@ -57,9 +57,10 @@ state-tracking, and delegation.
   testability, and maintainability; agrees findings with the human; writes
   `my-app/design-review.md`; may revise `architecture.md` under a separate
   approval if issues require it.
-- **Implementation Planning** (`/plan`) — not yet implemented. Will turn the
-  approved architecture into a dependency-ordered task list in
-  `my-app/impl-plan.md`.
+- **Implementation Planning** (`/plan`) — implemented. Breaks
+  `my-app/architecture.md` (as revised by Design Review) into a
+  dependency-ordered, prioritized task list in `my-app/impl-plan.md`,
+  explicitly carrying forward any items `design-review.md` deferred.
 - **Implementation** — not yet implemented as a distinct command; will be the
   main agent loop guided by `CLAUDE.md` and the impl plan.
 - **Code Review** (`/code-review`) — not yet implemented. Will run the fixed
