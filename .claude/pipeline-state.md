@@ -17,7 +17,7 @@
 | 4. Implementation Planning | `my-app/impl-plan.md` | ✅ Complete — confirmed & committed | `ada9a6d` |
 | 5. Implementation | (source diffs) | ✅ Complete — T1-T12 all done | `48108be` (T1), `37a9b0d` (T2), `0227677` (T3), `064dac1` (T4), `4aa9362` (T5), `bbcf503` (T6), `3280893` (T7), `7a8a500` (T8), `c2a1cb7` (T9), `e5253d8` (T10), `e85a4f2` (T11), `9565b9c` (T12) |
 | 6. Code Review | `my-app/code-review.md` | ✅ Complete — reviewed, 2 must-fix items agreed & fixed, committed | `64e4948` (fix), `764bc4d` (code-review.md) |
-| 7. Verification | `my-app/verification-report.md` | ✅ Complete — 8 full-suite runs, 3 traceability-gap tests added, flake mitigated with `retries: 1` | `e2bd89a` (tests+config), `5facad8` (verification-report.md + DoD) |
+| 7. Verification | `my-app/verification-report.md` | ✅ Complete — 13 full-suite runs total across 2 passes, 3 traceability-gap tests added, flake mitigated, README.md gap found+fixed+independently reverified | `e2bd89a` (tests+config), `5facad8` (report v1 + DoD), `7936392`/`1bbef7d` (out-of-band README.md fix + `/verify` command update — confirmed authorized by human), `2bfad80` (fresh re-run, report v2) |
 | 8. PR | PR description | ⏳ Not started — current stage | — |
 
 ## Open items carried forward
