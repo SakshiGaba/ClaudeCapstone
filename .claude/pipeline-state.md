@@ -121,6 +121,23 @@ following each command's approval procedure exactly as written, and the
 human should keep reading what gets written/committed, since that review
 is the actual backstop here, not the hook.
 
+## Stage 5 task checklist (implementation, one task per /implement run)
+
+| Task | Status | Commit |
+|---|---|---|
+| T1 — schema migration + index | ⏳ Not started | — |
+| T2 — POST validation/defaulting | ⏳ Not started (depends on T1) | — |
+| T3 — GET filter support | ⏳ Not started (depends on T1) | — |
+| T4 — client category input | ⏳ Not started (depends on T2) | — |
+| T5 — client filter dropdown | ⏳ Not started (depends on T3, T4) | — |
+| T6 — client empty state | ⏳ Not started (depends on T5) | — |
+| T7 — client delete-under-filter | ⏳ Not started (depends on T5, T6) | — |
+| T8 — Playwright add-with/without-category | ⏳ Not started (depends on T4) | — |
+| T9 — Playwright filter/empty-state | ⏳ Not started (depends on T6) | — |
+| T10 — Playwright delete-under-filter | ⏳ Not started (depends on T7) | — |
+| T11 — Playwright invalid-input coverage | ⏳ Not started (depends on T2, T3) | — |
+| T12 — load-test script (blocks Stage 8 PR) | ⏳ Not started (depends on T1, T3) | — |
+
 ## Notes for whoever/whatever picks this up next
 
 - Requirements are locked (FR-1..FR-8, NFR-1..NFR-4). Architecture stage
