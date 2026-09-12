@@ -143,3 +143,42 @@ test('deleting the last item in an active filtered view keeps the filter and sho
   await expect(page.getByText('No items in this category.')).toBeVisible();
   await expect(page.locator('#category-filter')).toHaveValue(category);
 });
+
+// T11: invalid-input specs
+test('a category over 50 characters is rejected with 400', async ({ request }) => {
+  const longCategory = 'x'.repeat(51);
+  const res = await request.post('/api/items', {
+    data: { name: unique('T11-Long'), category: longCategory },
+  });
+  expect(res.status()).toBe(400);
+  const body = await res.json();
+  expect(body.error).toMatch(/50 characters/i);
+});
+
+test('a whitespace-only category succeeds and defaults to Uncategorized (not a 400)', async ({ request }) => {
+  const res = await request.post('/api/items', {
+    data: { name: unique('T11-Whitespace'), category: '   ' },
+  });
+  expect(res.status()).toBe(201);
+  const body = await res.json();
+  expect(body.category).toBe('Uncategorized');
+});
+
+test('a non-string category in the POST body is rejected with 400, not a 500', async ({ request }) => {
+  const res = await request.post('/api/items', {
+    data: { name: unique('T11-NonStringCat'), category: 123 },
+  });
+  expect(res.status()).toBe(400);
+});
+
+test('a non-string name in the POST body is rejected with 400, not a 500', async ({ request }) => {
+  const res = await request.post('/api/items', {
+    data: { name: 123, category: unique('T11-NonStringName') },
+  });
+  expect(res.status()).toBe(400);
+});
+
+test('a repeated category query param (array) on GET is rejected with 400, not a 500', async ({ request }) => {
+  const res = await request.get('/api/items?category=A&category=B');
+  expect(res.status()).toBe(400);
+});
