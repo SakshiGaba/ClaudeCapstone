@@ -81,3 +81,44 @@ test('adding an item with category omitted, blank, or whitespace-only defaults t
   expect(names).toContain(blankName);
   expect(names).toContain(whitespaceName);
 });
+
+// T9: filter list by category, and filter to a category with zero items
+test('filtering by category shows only matching items', async ({ page }) => {
+  await page.goto('/');
+  const nameA = unique('T9-ItemA');
+  const nameB = unique('T9-ItemB');
+  const catA = unique('T9-CatA');
+  const catB = unique('T9-CatB');
+
+  await page.fill('input[placeholder="New item name"]', nameA);
+  await page.fill('input[placeholder="Category (optional)"]', catA);
+  await page.click('button:has-text("Add")');
+  await expect(page.locator('li', { hasText: nameA })).toBeVisible();
+
+  await page.fill('input[placeholder="New item name"]', nameB);
+  await page.fill('input[placeholder="Category (optional)"]', catB);
+  await page.click('button:has-text("Add")');
+  await expect(page.locator('li', { hasText: nameB })).toBeVisible();
+
+  await page.selectOption('#category-filter', catA);
+  await expect(page.locator('li', { hasText: nameA })).toBeVisible();
+  await expect(page.locator('li', { hasText: nameB })).not.toBeVisible();
+});
+
+test('filtering to a category with zero matching items shows the empty-state message', async ({ page }) => {
+  await page.goto('/');
+  const name = unique('T9-EmptyItem');
+  const category = unique('T9-EmptyCat');
+
+  await page.fill('input[placeholder="New item name"]', name);
+  await page.fill('input[placeholder="Category (optional)"]', category);
+  await page.click('button:has-text("Add")');
+
+  await page.selectOption('#category-filter', category);
+  await expect(page.locator('li', { hasText: name })).toBeVisible();
+
+  await page.locator('li', { hasText: name }).locator('button:has-text("Delete")').click();
+
+  await expect(page.getByText('No items in this category.')).toBeVisible();
+  await expect(page.locator('.item-list')).toHaveCount(0);
+});
