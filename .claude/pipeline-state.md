@@ -87,25 +87,31 @@ was verified correct via `git diff`/read-back before commit — this caveat
 affects marker bookkeeping only, not the human-approval requirement itself
 (approval was still obtained and content still matches what was approved).
 
-**Root cause identified (2026-09-12):** confirmed with the human that Stages
-2-3 were run via the **VS Code Claude Code extension's chat panel**, not a
-real terminal running the `claude` CLI. There is a known, open Claude Code
-issue where the VS Code extension does not read or respect permission/hook
-settings from `.claude/settings.json` (or user-level `~/.claude/settings.json`),
-even though CLI and extension are documented as sharing settings. This fully
-explains the observed behavior: the hook script itself is correct (verified
-8/8 manual test cases), but the extension panel never invokes it, so writes
-to gated artifacts succeed unconditionally regardless of approval markers.
+**ROOT CAUSE FOUND AND FIXED (2026-09-12):** the earlier "VS Code extension
+doesn't read settings.json" theory was **wrong** — the human confirmed
+Stages 2-3 were run via a genuine `claude` CLI session in a real terminal
+(they typed `claude` and pressed enter themselves). The actual bug: the
+hook script's JSON parsing shelled out to `python3` with
+`2>/dev/null || echo ""` swallowing any failure. On the human's machine
+(Windows, MSYS2 bash), `python3` resolves to a Microsoft Store alias stub,
+not a real interpreter — so parsing silently failed, `TOOL_NAME` came back
+empty, the `if [[ "$TOOL_NAME" != "Write" && "$TOOL_NAME" != "Edit" ]]`
+check treated that as "not a gated tool," and the script exited 0
+(**allowed**) before ever checking the approval marker. This is a **fail-open**
+bug in a component whose entire job is to fail closed.
 
-**Practical implication:** for as long as this stage's work is done via the
-extension panel, "enforcement" is effectively back to instruction-following
-only (the command files still say "ask before writing," and that's being
-followed) — the hook is not actually the backstop it was designed to be.
-**Action:** verify the hook actually blocks/allows when the same command is
-run from a genuine terminal (`claude` typed into an OS shell, including
-VS Code's own integrated terminal panel, not the extension's chat sidebar)
-before relying on it for Stage 5+ (Implementation), where enforcement matters
-most (source code changes, not just docs).
+**Fix shipped:** `check-stage-approval.sh` rewritten to try `node` first
+(this is a Node.js project — node is expected to be present in any dev
+environment for it), then `python3`, then `python`, and if **none** parse
+successfully, the hook now explicitly **blocks (exit 2)** with a clear error
+telling the human to install Node or Python — it no longer silently no-ops.
+Re-verified with 6 test cases including a deliberately empty-PATH
+simulation of "no interpreter available," which now correctly fails closed
+instead of allowing the write. **Action for the human:** pull this fix,
+re-run the same manual diagnostic (`echo '{...}' | bash
+.claude/hooks/check-stage-approval.sh`) to confirm `node` is found and used
+on your machine, then retry a real Write/Edit in a `claude` session to
+confirm the block is now visible.
 
 ## Notes for whoever/whatever picks this up next
 
