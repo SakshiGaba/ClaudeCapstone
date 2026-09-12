@@ -19,7 +19,7 @@ Project under management: `my-app/` (React + Express + SQLite items app).
 | 5 | Implementation | source diffs | `/implement` | ✅ implemented |
 | 6 | Code Review | `my-app/code-review.md` | `/code-review` | ✅ implemented |
 | 7 | Verification | `my-app/verification-report.md` | `/verify` | ✅ implemented |
-| 8 | PR | PR description | `/open-pr` | ⏳ not yet built |
+| 8 | PR | PR description | `/open-pr` | ✅ implemented |
 
 Live pipeline state (which stage is current, what's been approved) is tracked
 in `.claude/pipeline-state.md`. Always read that file at the start of a

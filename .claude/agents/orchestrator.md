@@ -78,9 +78,10 @@ state-tracking, and delegation.
   consistency (contradictions, stale checklists, broken cross-references).
   Writes `my-app/verification-report.md`, which feeds Stage 8's Known
   Limitations section directly.
-- **PR** (`/open-pr`) — not yet implemented. Will generate the PR description
-  with Summary / Changes Made / Test Evidence / Known Limitations / Reviewer
-  Checklist.
+- **PR** (`/open-pr`) — implemented. Generates the PR description directly
+  from `requirements.md`/`impl-plan.md`/`code-review.md`/
+  `verification-report.md` (never invented), confirms with the human, then
+  opens the actual PR via GitHub API/`gh` and reports back the real URL.
 
 If asked to build the next stage's command, do that as its own well-scoped
 task — don't bundle multiple stages into one change.
