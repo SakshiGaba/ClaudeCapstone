@@ -79,5 +79,5 @@ belong to a specific group instead of scrolling through one long flat list.
 - [x] `requirements.md` (this document) captures the finalized, clarified scope.
 - [x] `architecture.md` produced and reviewed (Step 2–3, architecture proposed, confirmed, and design-reviewed — see `design-review.md`).
 - [x] Implementation plan produced (Step 4 — see `impl-plan.md`, tasks T1-T12).
-- [ ] Code implemented, reviewed, and tested — unit + Playwright e2e (Steps 5–7).
+- [x] Code implemented, reviewed, and tested — unit + Playwright e2e (Steps 5–7).
 - [ ] PR created with all required sections: Summary, Changes Made, Test Evidence, Known Limitations, Reviewer Checklist (Step 8).
