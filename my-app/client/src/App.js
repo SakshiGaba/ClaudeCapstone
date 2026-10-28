@@ -42,10 +42,11 @@ function App() {
   const addItem = async (e) => {
     e.preventDefault();
     if (!name.trim()) return;
+    const body = category !== '' ? { name, category } : { name };
     const res = await fetch('/api/items', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, category }),
+      body: JSON.stringify(body),
     });
     if (res.ok) {
       setName('');
