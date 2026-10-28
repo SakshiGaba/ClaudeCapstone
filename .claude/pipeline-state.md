@@ -4,10 +4,22 @@
 > a stage. This is the single source of truth for "where are we."
 
 **Active story:** ITEMS-101 — Categorize and Filter Items
-**Current stage:** 8 — PR (complete — https://github.com/SakshiGaba/ClaudeCapstone/pull/1)
-**Last completed stage:** 8 — PR (all 8 stages of the pipeline now complete)
+**Current stage:** 2 — Architecture (branch `step1-clean` only — see note below)
+**Last completed stage (branch `step1-clean`):** 1 — Requirements, fresh clarification pass, commit `9caf729`
 
-## Stage log
+> **Branch note (2026-10-28):** this file's history below (stages 1-8, all
+> ✅) describes `main`, where ITEMS-101 already fully shipped via PR #1.
+> `step1-clean` is a separate, deliberate redo of Stage 1 from a clean
+> branch off `main`'s tip, re-asking all clarifying questions from scratch
+> rather than reusing prior answers (unlike the earlier `step1-rerun`
+> branch, which reused them). **One answer changed:** a whitespace-only
+> category is now rejected (HTTP 400) per the story's literal AC-7, instead
+> of defaulting to `Uncategorized` as `main`'s shipped implementation does.
+> This is a genuine scope change requiring stages 2-8 to be redone on this
+> branch — see `my-app/requirements.md` FR-7 and the new open item below.
+> `main` itself is unaffected and remains fully complete through Stage 8.
+
+## Stage log (`main`, fully complete — for reference; see branch note above for `step1-clean`)
 
 | Stage | Artifact | Status | Commit |
 |---|---|---|---|
@@ -21,6 +33,17 @@
 | 8. PR | [PR #1](https://github.com/SakshiGaba/ClaudeCapstone/pull/1) | ✅ Complete — open, mergeable_state: clean | `1da0c72` (feature branch), retroactive reset `7be2d4f` (main) |
 
 ## Open items carried forward
+
+- **[`step1-clean` branch only] FR-7 whitespace-only category behavior
+  changed (2026-10-28):** fresh Stage 1 clarification on `step1-clean`
+  decided whitespace-only categories must be **rejected** (HTTP 400) per
+  the story's literal AC-7, reversing the decision made on `main`/
+  `step1-rerun` (defaults to `Uncategorized`, same as omitted). Architecture
+  on this branch must add an explicit "field present but empty after trim"
+  check distinct from "field omitted" — the current `main` code conflates
+  the two. Must be re-flagged at Design Review and Code Review on this
+  branch so it isn't missed relative to the behavior that actually shipped
+  on `main`. See `my-app/requirements.md` FR-1/FR-7.
 
 - **Stale `server/db/app.db` from T12's load-test — resolved at Stage 7
   (2026-09-12):** confirmed at Stage 6 that a leftover load-test DB
