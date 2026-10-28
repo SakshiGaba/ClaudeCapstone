@@ -7,11 +7,23 @@
 **Current stage:** 8 — PR (complete — https://github.com/SakshiGaba/ClaudeCapstone/pull/1)
 **Last completed stage:** 8 — PR (all 8 stages of the pipeline now complete)
 
+> **Stage 1 re-run (2026-10-28, branch `step1-rerun`):** `/requirements` was
+> run again against the same source doc after the pipeline was already
+> fully complete on `main`. Human confirmed (via clarifying question) this
+> was a revision of the existing `requirements.md`, reusing the previously
+> confirmed clarification answers rather than re-litigating them — see
+> commit `3364985`. **Scope did not change**, so stages 2-8 below were
+> **not** re-run and their artifacts/commits still stand as the
+> authoritative record for this story. Treat `Current stage`/`Last
+> completed stage` above as still accurate; do not auto-advance to
+> Architecture for this re-run unless the human explicitly asks for a full
+> pipeline redo on this branch.
+
 ## Stage log
 
 | Stage | Artifact | Status | Commit |
 |---|---|---|---|
-| 1. Requirements | `my-app/requirements.md` | ✅ Complete — clarified & committed | `1e87fcb` |
+| 1. Requirements | `my-app/requirements.md` | ✅ Complete — clarified & committed; re-run with same answers on `step1-rerun` | `1e87fcb`, re-run `3364985` |
 | 2. Architecture | `my-app/architecture.md` | ✅ Complete — confirmed, committed, revised per Design Review | `f13efd2`, revised `52b152d` |
 | 3. Design Review | `my-app/design-review.md` | ✅ Complete — reviewed & agreed & committed | `52b152d` |
 | 4. Implementation Planning | `my-app/impl-plan.md` | ✅ Complete — confirmed & committed | `ada9a6d` |
