@@ -4,8 +4,8 @@
 > a stage. This is the single source of truth for "where are we."
 
 **Active story:** ITEMS-101 — Categorize and Filter Items
-**Current stage:** 5 — Implementation (branch `step1-clean` only — see note below)
-**Last completed stage (branch `step1-clean`):** 4 — Implementation Planning, fresh round, commit `24b4656`
+**Current stage:** 6 — Code Review (branch `step1-clean` only — see note below)
+**Last completed stage (branch `step1-clean`):** 5 — Implementation, T1-T12 all done, commits `c5c8f4e`..`83a0bba` (see Stage 5 checklist below for per-task detail)
 
 > **Branch note (2026-10-28):** this file's history below (stages 1-8, all
 > ✅) describes `main`, where ITEMS-101 already fully shipped via PR #1.
@@ -78,13 +78,17 @@ Per `my-app/impl-plan.md` (commit `24b4656`), layer-complete order, one task per
 | T3 — GET filter support | ✅ Done — no code change needed (inherited from `main` unchanged, FR-7 doesn't touch GET filtering); verified live (unfiltered, case-insensitive match, zero-match returns `[]`, non-string/array query param rejects with 400), 2026-10-28 |
 | T4 — client category input + key-omission POST body logic (new scope) | ✅ Done, commit `545877c` — POST body now omits `category` key when input is untouched/cleared (`''`), includes it as-is otherwise; build verified clean, logic self-checked against FR-1/FR-2/FR-7 |
 | T5 — client filter dropdown | ✅ Done — no code change needed (inherited from `main` unchanged, including the T6-era `filterOptions` fix that keeps the active filter visible with zero matches); verified live by hitting the exact URLs the dropdown constructs, 2026-10-28 |
-| T6 — client empty state | Not started |
-| T7 — client delete-under-filter | Not started |
-| T8 — Playwright add-with-category / add-with-untouched-field | Not started |
-| T9 — Playwright filter/empty-state | Not started |
-| T10 — Playwright delete-under-filter | Not started |
-| T11 — Playwright invalid-input incl. whitespace-only-rejection (new expectation) | Not started |
-| T12 — load-test script (blocks Stage 8 PR) | Not started |
+| T6 — client empty state | ✅ Done — no code change needed (inherited from `main` unchanged); proven live end-to-end by the T9/T10 Playwright specs |
+| T7 — client delete-under-filter | ✅ Done — no code change needed (inherited from `main` unchanged); proven live end-to-end by the T10 Playwright spec |
+| T8 — Playwright add-with-category / add-with-untouched-field | ✅ Done, commit `83a0bba` — narrowed to omitted/blank only (whitespace-only sub-case moved to T11, opposite outcome now) |
+| T9 — Playwright filter/empty-state | ✅ Done — unchanged from inherited suite, not affected by FR-7; passed in the full suite run |
+| T10 — Playwright delete-under-filter | ✅ Done — unchanged from inherited suite, not affected by FR-7; passed in the full suite run |
+| T11 — Playwright invalid-input incl. whitespace-only-rejection (new expectation) | ✅ Done, commit `83a0bba` — replaced old "whitespace succeeds" spec with a UI-driven rejection spec (proves the full T2+T4 round trip) plus a direct-API empty-string-rejection spec |
+| T12 — load-test script (blocks Stage 8 PR) | ✅ Done — no code change needed (inherited from `main` unchanged, performance-only, unaffected by FR-7); **real measured numbers** at 10,000 items, 2026-10-28: unfiltered avg 100.30ms / max 117.75ms, filtered (`?category=Fruit`) avg 17.86ms / max 23.20ms — both well under the 200ms NFR-1 threshold |
+
+**Full suite run (2026-10-28):** `npx playwright test` against a fresh DB — **17/17 passed**, including both new/changed specs (T8, T11) and the unaffected ones (T9, T10 and the pre-existing suite), which as a side effect prove T5/T6/T7's inherited client behavior works correctly end-to-end on this branch.
+
+**Stage 5 complete for `step1-clean`: all T1-T12 done.**
 
 - **Stale `server/db/app.db` from T12's load-test — resolved at Stage 7
   (2026-09-12):** confirmed at Stage 6 that a leftover load-test DB
