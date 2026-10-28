@@ -1,8 +1,8 @@
 # Requirements: ITEMS-101 — Categorize and Filter Items
 
-**Status:** Finalized after clarification
-**Source:** User story doc `ITEMS-101` (Epic: Item Organization, Priority: High)
-**Clarified with:** Product owner (Q&A below), during Step 1 of the Agentic SDLC pipeline
+**Status:** Finalized after clarification (Stage 1 re-run on `step1-rerun`, 2026-10-28 — clarification answers carried forward unchanged from the original run)
+**Source:** User story doc `stories/ITEMS-101-user-story.docx` (Epic: Item Organization, Priority: High)
+**Clarified with:** Product owner (Q&A below), during the original Step 1 run; reconfirmed as still binding during this re-run rather than re-litigated
 
 ## 1. Narrative
 
@@ -49,6 +49,15 @@ belong to a specific group instead of scrolling through one long flat list.
 - A category consisting only of whitespace is treated as "no category provided" (→ defaults to `Uncategorized`, per FR-1), not as a validation error.
 - A category over 50 characters is rejected with HTTP 400 and a clear validation message (consistent with the existing `name` validation pattern in `server/index.js`).
 
+> **Known discrepancy vs. source story, carried forward deliberately:** the
+> source story's AC #7 says a whitespace-only category should be **rejected**
+> with a validation message (same treatment as >50 chars). FR-7 above instead
+> treats whitespace-only as "no category provided" and silently defaults to
+> `Uncategorized`. This conflict was identified on the original Stage 1 run,
+> confirmed as a binding decision during Design Review (not reopened), and is
+> being carried forward unchanged on this re-run rather than re-litigated —
+> see `design-review.md` §2/§3 for the original resolution.
+
 ### FR-8 — Backward-compatible data migration
 - The `items` table gets a new `category TEXT NOT NULL DEFAULT 'Uncategorized'` column.
 - Existing rows (created before this feature shipped) are backfilled to `'Uncategorized'` automatically via the column default — no separate backfill script required.
@@ -77,7 +86,13 @@ belong to a specific group instead of scrolling through one long flat list.
 ## 6. Definition of Done
 
 - [x] `requirements.md` (this document) captures the finalized, clarified scope.
-- [x] `architecture.md` produced and reviewed (Step 2–3, architecture proposed, confirmed, and design-reviewed — see `design-review.md`).
-- [x] Implementation plan produced (Step 4 — see `impl-plan.md`, tasks T1-T12).
-- [x] Code implemented, reviewed, and tested — unit + Playwright e2e (Steps 5–7).
-- [ ] PR created with all required sections: Summary, Changes Made, Test Evidence, Known Limitations, Reviewer Checklist (Step 8).
+- [x] `architecture.md` produced and reviewed (Stage 2–3, architecture proposed, confirmed, and design-reviewed — see `design-review.md`).
+- [x] Implementation plan produced (Stage 4 — see `impl-plan.md`, tasks T1-T12).
+- [x] Code implemented, reviewed, and tested — unit + Playwright e2e (Stages 5–7).
+- [x] PR created with all required sections: Summary, Changes Made, Test Evidence, Known Limitations, Reviewer Checklist (Stage 8 — [PR #1](https://github.com/SakshiGaba/ClaudeCapstone/pull/1), merged).
+
+> Note: items 2–8 above were already completed against the original version
+> of this document (see `.claude/pipeline-state.md` for full stage history
+> and commit hashes). This re-run of Stage 1 reconfirmed the same scope
+> rather than changing it, so no downstream stage needs to be redone unless
+> the human asks for it.
