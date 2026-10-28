@@ -4,8 +4,8 @@
 > a stage. This is the single source of truth for "where are we."
 
 **Active story:** ITEMS-101 — Categorize and Filter Items
-**Current stage:** 3 — Design Review (branch `step1-clean` only — see note below)
-**Last completed stage (branch `step1-clean`):** 2 — Architecture, revised for new FR-7, commit `16fc4b6`
+**Current stage:** 4 — Implementation Planning (branch `step1-clean` only — see note below)
+**Last completed stage (branch `step1-clean`):** 3 — Design Review, fresh round, approved as revised, commit `d38dd8d`
 
 > **Branch note (2026-10-28):** this file's history below (stages 1-8, all
 > ✅) describes `main`, where ITEMS-101 already fully shipped via PR #1.
@@ -48,10 +48,16 @@
   the raw input is non-empty (untouched → key omitted → server defaults;
   typed-only-whitespace → key included → server rejects) — confirmed with
   human, see `architecture.md` §6. This client-side change is **new scope
-  for Stage 5** that didn't exist in `main`'s original implementation. Still
-  needs Design Review sign-off (Stage 3) and, later, Code Review attention
-  (Stage 6) so it isn't missed relative to what actually shipped on `main`.
-  See `my-app/requirements.md` FR-1/FR-7 and `my-app/architecture.md` §4/§6/§8.
+  for Stage 5** that didn't exist in `main`'s original implementation.
+  **Design Review completed (2026-10-28, commit `d38dd8d`):** approved as
+  revised — fixed a misleading `architecture.md` §7 sentence (wrongly
+  equated a direct `category: ""` API call with the UI's untouched-field
+  case) and added the exact validation message
+  `"Category cannot be only whitespace"` to §3/§4. The client-omission
+  design itself was confirmed acceptable, no further changes. Still needs
+  Code Review attention (Stage 6) so this divergence from `main` isn't
+  missed. See `my-app/requirements.md` FR-1/FR-7, `my-app/architecture.md`
+  §4/§6/§8, `my-app/design-review.md`.
 
 - **Stale `server/db/app.db` from T12's load-test — resolved at Stage 7
   (2026-09-12):** confirmed at Stage 6 that a leftover load-test DB
