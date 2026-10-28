@@ -74,8 +74,8 @@ Per `my-app/impl-plan.md` (commit `24b4656`), layer-complete order, one task per
 | Task | Status |
 |---|---|
 | T1 — schema migration + index | ✅ Done — no code change needed (inherited from `main` unchanged, FR-7 doesn't touch schema); verified fresh-start migration + idempotent restart against a real DB, 2026-10-28 |
-| T2 — POST validation/defaulting (new omitted-vs-whitespace branch) | Not started |
-| T3 — GET filter support | Not started |
+| T2 — POST validation/defaulting (new omitted-vs-whitespace branch) | ✅ Done — new branch verified live (omitted defaults, whitespace/empty-string reject with new message, >50 chars and non-string unchanged) | `813c2ef` |
+| T3 — GET filter support | ✅ Done — no code change needed (inherited from `main` unchanged, FR-7 doesn't touch GET filtering); verified live (unfiltered, case-insensitive match, zero-match returns `[]`, non-string/array query param rejects with 400), 2026-10-28 |
 | T4 — client category input + key-omission POST body logic (new scope) | Not started |
 | T5 — client filter dropdown | Not started |
 | T6 — client empty state | Not started |
