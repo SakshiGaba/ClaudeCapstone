@@ -7,6 +7,10 @@ day; both of those predate this branch's requirements change.
 **Builds on:** `my-app/requirements.md` (FR-1..FR-8, NFR-1..NFR-4) as finalized
 on `step1-clean`
 
+**Revised per Design Review (2026-10-28):** corrected a misleading NFR-2
+sentence in §7 and specified the exact whitespace-rejection error message in
+§3/§4 — see `my-app/design-review.md` §2 findings.
+
 ## 1. Overview
 
 This is an **incremental extension** of the existing Items app, not a
@@ -50,7 +54,7 @@ the **client** builds its request body, not just the server's validation.
 | Component | Responsibility | What changes for this story |
 |---|---|---|
 | `client/src/App.js` | Renders item list, add-item form, drives all UI state | Add a `category` text input to the add form; **build the POST body so `category` is included only when the raw input state is non-empty** (`''` → key omitted; anything the user typed, including pure whitespace, → key included as-is) so the server can tell "nothing entered" from "whitespace entered" apart; add a category filter control (dropdown/select) driven by distinct categories currently in view; re-fetch or update state after add/delete so the filtered view stays live (FR-4); render an explicit empty-state message when the filtered list is empty (FR-5); render the server's validation error text as-is on rejection (no new client-side validation logic needed — the existing generic error-display path already covers this, see §4 Flow A) |
-| `server/index.js` | Express routes, request validation, SQL access | `POST /api/items`: reject non-string `name`/`category` (arrays, numbers, objects, `null`) with `400` *before* any `.trim()` call, then branch on presence: `category === undefined` → default to `'Uncategorized'` (FR-1); `category` is a string that trims to `''` → reject `400` (FR-7, new behavior this branch); otherwise trim, reject `400` if >50 chars, else store as-typed. `GET /api/items`: accept optional `category` query param, reject a non-string value with `400`, filter case-insensitively otherwise (FR-3, NFR-2); add a startup migration routine (see §5) |
+| `server/index.js` | Express routes, request validation, SQL access | `POST /api/items`: reject non-string `name`/`category` (arrays, numbers, objects, `null`) with `400` *before* any `.trim()` call, then branch on presence: `category === undefined` → default to `'Uncategorized'` (FR-1); `category` is a string that trims to `''` → reject `400` with `"Category cannot be only whitespace"` (FR-7, new behavior this branch); otherwise trim, reject `400` if >50 chars, else store as-typed. `GET /api/items`: accept optional `category` query param, reject a non-string value with `400`, filter case-insensitively otherwise (FR-3, NFR-2); add a startup migration routine (see §5) |
 | `server/db/app.db` (SQLite) | Persistent storage | New `category` column with a `NOT NULL DEFAULT 'Uncategorized'` constraint (FR-8); new expression index for case-insensitive lookups (NFR-1) |
 | `tests/app.spec.js` (Playwright) | End-to-end verification | New specs for: add with category, add without category via an untouched field (defaults), add with a whitespace-only-typed category (now a rejection case, distinct from the untouched-field case), filter by category, filter with zero matches (empty state), delete under an active filter, validation rejection for overlong category (NFR-4) — built in Stage 5/7, not this stage |
 
@@ -78,8 +82,8 @@ new plumbing is needed there.
      provided," store `"Uncategorized"` (FR-1).
    - `category` is a string → trim it. If the trimmed result is `''`
      (i.e. the field was present but held only whitespace) → respond `400`
-     with a validation message (FR-7, **new** on this branch — previously
-     this case silently defaulted).
+     with `"Category cannot be only whitespace"` (FR-7, **new** on this
+     branch — previously this case silently defaulted).
    - Trimmed, non-empty, ≤50 chars → store as-typed (preserving casing per
      FR-2).
    - Trimmed, non-empty, >50 chars → respond `400` (FR-7, unchanged).
@@ -141,7 +145,7 @@ from the original architecture; FR-7's change does not affect the schema.
 | NFR | How this design satisfies it |
 |---|---|
 | NFR-1 (200ms / 10k items) | Expression index on `LOWER(category)` avoids full-table scans on filtered `GET /api/items` calls. |
-| NFR-2 (server-side enforcement) | Filtering and validation both live in `server/index.js`'s request handlers, not just the client; a direct `curl` to the API with `?category=` will be correctly filtered regardless of what the UI does. The new omitted-vs-whitespace-only branch is also enforced server-side — a direct API call sending `category: ""` is rejected exactly like one from the UI would be, since the client's key-omission behavior only changes what's *sent*, not how the server interprets what arrives. |
+| NFR-2 (server-side enforcement) | Filtering and validation both live in `server/index.js`'s request handlers, not just the client; a direct `curl` to the API with `?category=` will be correctly filtered regardless of what the UI does. The new omitted-vs-whitespace-only branch is also enforced server-side: a direct API call sending an explicit `category: ""` is rejected — matching what the UI would produce if a user *typed something and then cleared it back to whitespace* before submitting. It is **not** equivalent to the UI's "never touched the field" case, which omits the `category` key entirely and gets defaulted, not rejected. (Corrected per Design Review — the prior wording conflated these two cases.) |
 | NFR-3 (backward compatibility) | The `ALTER TABLE ... DEFAULT 'Uncategorized'` migration backfills existing rows in place; no existing data or endpoint contract is broken. |
 | NFR-4 (test coverage) | §3 lists the specific new Playwright specs required, including a dedicated whitespace-only-rejection case distinct from the untouched-field-defaults case; planned for Stage 5/7, not written here. |
 
@@ -157,6 +161,8 @@ from the original architecture; FR-7's change does not affect the schema.
   serialization ambiguity, but it does mean a user who clears a previously-
   typed category back to empty behaves identically to one who never typed
   anything (both omit the key) — confirm this UX equivalence is acceptable.
+  **Confirmed by Design Review (2026-10-28):** accepted as-is, no change —
+  matches normal form UX, unsurprising to users.
 - **Startup migration on every boot:** the `ALTER TABLE` check runs on every
   server start (guarded to be a no-op after the first successful run). This
   is safe for a single-instance dev/small-scale deployment but would need
