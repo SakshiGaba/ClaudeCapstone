@@ -4,8 +4,8 @@
 > a stage. This is the single source of truth for "where are we."
 
 **Active story:** ITEMS-101 — Categorize and Filter Items
-**Current stage:** 2 — Architecture (branch `step1-clean` only — see note below)
-**Last completed stage (branch `step1-clean`):** 1 — Requirements, fresh clarification pass, commit `9caf729`
+**Current stage:** 3 — Design Review (branch `step1-clean` only — see note below)
+**Last completed stage (branch `step1-clean`):** 2 — Architecture, revised for new FR-7, commit `16fc4b6`
 
 > **Branch note (2026-10-28):** this file's history below (stages 1-8, all
 > ✅) describes `main`, where ITEMS-101 already fully shipped via PR #1.
@@ -38,12 +38,20 @@
   changed (2026-10-28):** fresh Stage 1 clarification on `step1-clean`
   decided whitespace-only categories must be **rejected** (HTTP 400) per
   the story's literal AC-7, reversing the decision made on `main`/
-  `step1-rerun` (defaults to `Uncategorized`, same as omitted). Architecture
-  on this branch must add an explicit "field present but empty after trim"
-  check distinct from "field omitted" — the current `main` code conflates
-  the two. Must be re-flagged at Design Review and Code Review on this
-  branch so it isn't missed relative to the behavior that actually shipped
-  on `main`. See `my-app/requirements.md` FR-1/FR-7.
+  `step1-rerun` (defaults to `Uncategorized`, same as omitted). **Addressed
+  at Stage 2 (2026-10-28):** `architecture.md` revised with an explicit
+  "field present but empty after trim → reject" branch, distinct from
+  "field omitted → default." Also surfaced and resolved a related
+  cross-reference finding while reading the actual client code: since the
+  category `<input>` always holds a string (`''` by default), the client
+  must now build the POST body so the `category` key is included only when
+  the raw input is non-empty (untouched → key omitted → server defaults;
+  typed-only-whitespace → key included → server rejects) — confirmed with
+  human, see `architecture.md` §6. This client-side change is **new scope
+  for Stage 5** that didn't exist in `main`'s original implementation. Still
+  needs Design Review sign-off (Stage 3) and, later, Code Review attention
+  (Stage 6) so it isn't missed relative to what actually shipped on `main`.
+  See `my-app/requirements.md` FR-1/FR-7 and `my-app/architecture.md` §4/§6/§8.
 
 - **Stale `server/db/app.db` from T12's load-test — resolved at Stage 7
   (2026-09-12):** confirmed at Stage 6 that a leftover load-test DB
