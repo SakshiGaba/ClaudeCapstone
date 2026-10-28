@@ -48,38 +48,34 @@ test('adding an item with an explicit category stores it as-is', async ({ page, 
   expect(data.find((item) => item.name === name)?.category).toBe(category);
 });
 
-test('adding an item with category omitted, blank, or whitespace-only defaults to Uncategorized', async ({
+test('adding an item with category omitted (untouched or cleared) defaults to Uncategorized', async ({
   page,
   request,
 }) => {
+  // Whitespace-only used to be covered here too (defaults to Uncategorized),
+  // but on this branch FR-7 changed: typing only whitespace is now rejected
+  // instead of defaulted. That case moved to the T11 invalid-input specs
+  // below, since it's a validation-error path now, not a defaulting path.
   await page.goto('/');
   const omittedName = unique('T8-Omitted-Name');
   const blankName = unique('T8-Blank-Name');
-  const whitespaceName = unique('T8-Whitespace-Name');
 
   // omitted category (field left untouched)
   await page.fill('input[placeholder="New item name"]', omittedName);
   await page.click('button:has-text("Add")');
   await expect(page.locator('li', { hasText: omittedName })).toBeVisible();
 
-  // blank category
+  // explicitly cleared/blank category (same raw state as untouched, '')
   await page.fill('input[placeholder="New item name"]', blankName);
   await page.fill('input[placeholder="Category (optional)"]', '');
   await page.click('button:has-text("Add")');
   await expect(page.locator('li', { hasText: blankName })).toBeVisible();
-
-  // whitespace-only category
-  await page.fill('input[placeholder="New item name"]', whitespaceName);
-  await page.fill('input[placeholder="Category (optional)"]', '   ');
-  await page.click('button:has-text("Add")');
-  await expect(page.locator('li', { hasText: whitespaceName })).toBeVisible();
 
   const res = await request.get('/api/items?category=Uncategorized');
   const data = await res.json();
   const names = data.map((item) => item.name);
   expect(names).toContain(omittedName);
   expect(names).toContain(blankName);
-  expect(names).toContain(whitespaceName);
 });
 
 // T9: filter list by category, and filter to a category with zero items
@@ -155,13 +151,35 @@ test('a category over 50 characters is rejected with 400', async ({ request }) =
   expect(body.error).toMatch(/50 characters/i);
 });
 
-test('a whitespace-only category succeeds and defaults to Uncategorized (not a 400)', async ({ request }) => {
+// This is the opposite expectation from the original plan's T11 (which
+// expected whitespace-only to succeed as Uncategorized). It's also
+// deliberately UI-driven rather than a direct API request: it's the spec
+// that proves the omitted-vs-whitespace distinction works end-to-end
+// through the real client (T4's key-omission POST body logic) and server
+// (T2's new validation branch) together, not just the untouched-field
+// case covered in T8.
+test('typing only whitespace into the category field is rejected with 400, shown inline, form not cleared', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const name = unique('T11-Whitespace');
+
+  await page.fill('input[placeholder="New item name"]', name);
+  await page.fill('input[placeholder="Category (optional)"]', '   ');
+  await page.click('button:has-text("Add")');
+
+  await expect(page.locator('.add-error')).toHaveText('Category cannot be only whitespace');
+  await expect(page.locator('li', { hasText: name })).not.toBeVisible();
+  await expect(page.locator('input[placeholder="New item name"]')).toHaveValue(name);
+});
+
+test('a direct API call with an explicit empty-string category is also rejected with 400', async ({ request }) => {
   const res = await request.post('/api/items', {
-    data: { name: unique('T11-Whitespace'), category: '   ' },
+    data: { name: unique('T11-EmptyString'), category: '' },
   });
-  expect(res.status()).toBe(201);
+  expect(res.status()).toBe(400);
   const body = await res.json();
-  expect(body.category).toBe('Uncategorized');
+  expect(body.error).toBe('Category cannot be only whitespace');
 });
 
 test('a non-string category in the POST body is rejected with 400, not a 500', async ({ request }) => {
