@@ -91,11 +91,19 @@ app.post('/api/items', (req, res) => {
   if (!name.trim()) {
     return res.status(400).json({ error: 'Name is required' });
   }
-  const trimmedCategory = category !== undefined ? category.trim() : '';
-  if (trimmedCategory.length > 50) {
-    return res.status(400).json({ error: 'Category must be 50 characters or fewer' });
+  let finalCategory;
+  if (category === undefined) {
+    finalCategory = 'Uncategorized';
+  } else {
+    const trimmedCategory = category.trim();
+    if (trimmedCategory === '') {
+      return res.status(400).json({ error: 'Category cannot be only whitespace' });
+    }
+    if (trimmedCategory.length > 50) {
+      return res.status(400).json({ error: 'Category must be 50 characters or fewer' });
+    }
+    finalCategory = trimmedCategory;
   }
-  const finalCategory = trimmedCategory === '' ? 'Uncategorized' : trimmedCategory;
   db.run(
     'INSERT INTO items (name, category) VALUES (?, ?)',
     [name.trim(), finalCategory],
