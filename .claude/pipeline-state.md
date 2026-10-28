@@ -73,7 +73,7 @@ Per `my-app/impl-plan.md` (commit `24b4656`), layer-complete order, one task per
 
 | Task | Status |
 |---|---|
-| T1 — schema migration + index | Not started |
+| T1 — schema migration + index | ✅ Done — no code change needed (inherited from `main` unchanged, FR-7 doesn't touch schema); verified fresh-start migration + idempotent restart against a real DB, 2026-10-28 |
 | T2 — POST validation/defaulting (new omitted-vs-whitespace branch) | Not started |
 | T3 — GET filter support | Not started |
 | T4 — client category input + key-omission POST body logic (new scope) | Not started |
