@@ -4,10 +4,22 @@
 > a stage. This is the single source of truth for "where are we."
 
 **Active story:** ITEMS-101 — Categorize and Filter Items
-**Current stage:** 8 — PR (complete — https://github.com/SakshiGaba/ClaudeCapstone/pull/1)
-**Last completed stage:** 8 — PR (all 8 stages of the pipeline now complete)
+**Current stage:** 5 — Implementation (branch `step1-clean` only — see note below)
+**Last completed stage (branch `step1-clean`):** 4 — Implementation Planning, fresh round, commit `24b4656`
 
-## Stage log
+> **Branch note (2026-10-28):** this file's history below (stages 1-8, all
+> ✅) describes `main`, where ITEMS-101 already fully shipped via PR #1.
+> `step1-clean` is a separate, deliberate redo of Stage 1 from a clean
+> branch off `main`'s tip, re-asking all clarifying questions from scratch
+> rather than reusing prior answers (unlike the earlier `step1-rerun`
+> branch, which reused them). **One answer changed:** a whitespace-only
+> category is now rejected (HTTP 400) per the story's literal AC-7, instead
+> of defaulting to `Uncategorized` as `main`'s shipped implementation does.
+> This is a genuine scope change requiring stages 2-8 to be redone on this
+> branch — see `my-app/requirements.md` FR-7 and the new open item below.
+> `main` itself is unaffected and remains fully complete through Stage 8.
+
+## Stage log (`main`, fully complete — for reference; see branch note above for `step1-clean`)
 
 | Stage | Artifact | Status | Commit |
 |---|---|---|---|
@@ -21,6 +33,58 @@
 | 8. PR | [PR #1](https://github.com/SakshiGaba/ClaudeCapstone/pull/1) | ✅ Complete — open, mergeable_state: clean | `1da0c72` (feature branch), retroactive reset `7be2d4f` (main) |
 
 ## Open items carried forward
+
+- **[`step1-clean` branch only] FR-7 whitespace-only category behavior
+  changed (2026-10-28):** fresh Stage 1 clarification on `step1-clean`
+  decided whitespace-only categories must be **rejected** (HTTP 400) per
+  the story's literal AC-7, reversing the decision made on `main`/
+  `step1-rerun` (defaults to `Uncategorized`, same as omitted). **Addressed
+  at Stage 2 (2026-10-28):** `architecture.md` revised with an explicit
+  "field present but empty after trim → reject" branch, distinct from
+  "field omitted → default." Also surfaced and resolved a related
+  cross-reference finding while reading the actual client code: since the
+  category `<input>` always holds a string (`''` by default), the client
+  must now build the POST body so the `category` key is included only when
+  the raw input is non-empty (untouched → key omitted → server defaults;
+  typed-only-whitespace → key included → server rejects) — confirmed with
+  human, see `architecture.md` §6. This client-side change is **new scope
+  for Stage 5** that didn't exist in `main`'s original implementation.
+  **Design Review completed (2026-10-28, commit `d38dd8d`):** approved as
+  revised — fixed a misleading `architecture.md` §7 sentence (wrongly
+  equated a direct `category: ""` API call with the UI's untouched-field
+  case) and added the exact validation message
+  `"Category cannot be only whitespace"` to §3/§4. The client-omission
+  design itself was confirmed acceptable, no further changes.
+  **Implementation Planning completed (2026-10-28, commit `24b4656`):**
+  fresh `impl-plan.md` written (the inherited one was stale, built for the
+  old FR-7 behavior with no client key-omission task). Changed tasks: T2
+  implements the omitted-vs-whitespace server branch; T4 is new scope —
+  client builds the POST body so `category` is included only when the raw
+  input is non-empty; T8 narrowed to the untouched-field case only; T11
+  now expects whitespace-only input to be *rejected* (opposite of the old
+  plan) and depends on T4. Still needs Code Review attention (Stage 6) so
+  this divergence from `main` isn't missed. See `my-app/requirements.md`
+  FR-1/FR-7, `my-app/architecture.md` §4/§6/§8, `my-app/design-review.md`,
+  `my-app/impl-plan.md` T2/T4/T8/T11.
+
+## Stage 5 task checklist for `step1-clean` (separate from `main`'s own checklist below)
+
+Per `my-app/impl-plan.md` (commit `24b4656`), layer-complete order, one task per `/implement` run:
+
+| Task | Status |
+|---|---|
+| T1 — schema migration + index | ✅ Done — no code change needed (inherited from `main` unchanged, FR-7 doesn't touch schema); verified fresh-start migration + idempotent restart against a real DB, 2026-10-28 |
+| T2 — POST validation/defaulting (new omitted-vs-whitespace branch) | ✅ Done — new branch verified live (omitted defaults, whitespace/empty-string reject with new message, >50 chars and non-string unchanged) | `813c2ef` |
+| T3 — GET filter support | ✅ Done — no code change needed (inherited from `main` unchanged, FR-7 doesn't touch GET filtering); verified live (unfiltered, case-insensitive match, zero-match returns `[]`, non-string/array query param rejects with 400), 2026-10-28 |
+| T4 — client category input + key-omission POST body logic (new scope) | Not started |
+| T5 — client filter dropdown | Not started |
+| T6 — client empty state | Not started |
+| T7 — client delete-under-filter | Not started |
+| T8 — Playwright add-with-category / add-with-untouched-field | Not started |
+| T9 — Playwright filter/empty-state | Not started |
+| T10 — Playwright delete-under-filter | Not started |
+| T11 — Playwright invalid-input incl. whitespace-only-rejection (new expectation) | Not started |
+| T12 — load-test script (blocks Stage 8 PR) | Not started |
 
 - **Stale `server/db/app.db` from T12's load-test — resolved at Stage 7
   (2026-09-12):** confirmed at Stage 6 that a leftover load-test DB

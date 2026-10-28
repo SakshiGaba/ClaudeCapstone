@@ -1,8 +1,10 @@
 # Requirements: ITEMS-101 — Categorize and Filter Items
 
-**Status:** Finalized after clarification
-**Source:** User story doc `ITEMS-101` (Epic: Item Organization, Priority: High)
-**Clarified with:** Product owner (Q&A below), during Step 1 of the Agentic SDLC pipeline
+**Status:** Finalized after a fresh clarification pass (branch `step1-clean`, 2026-10-28)
+**Source:** `stories/ITEMS-101-user-story.docx` (Epic: Item Organization, Priority: High)
+**Clarified with:** Product owner (Q&A below), re-asked from scratch on this branch rather than
+carried over from the prior `step1-rerun` pass — one decision below (whitespace-only category)
+came out differently this time; see note on FR-7.
 
 ## 1. Narrative
 
@@ -17,14 +19,16 @@ belong to a specific group instead of scrolling through one long flat list.
 | 1 | Is category matching case-sensitive? | **No — case-insensitive.** `"Work"` and `"work"` are the same category for filtering, defaulting, and uniqueness purposes. |
 | 2 | Free-text or fixed enum of categories? | **Free-text.** Any string is accepted, subject to the length/whitespace validation below. No enum for this story. |
 | 3 | What happens when the active filter's category has zero items left? | **Show an empty state; do not auto-clear the filter.** The user stays on the category they selected and sees a "no items" message until they change or clear the filter themselves. |
-| 4 | How to backfill category for pre-existing rows? | **Schema migration with a SQL-level default.** The `category` column is added with `DEFAULT 'Uncategorized'`, so existing rows are backfilled at the database level, not patched in application code. |
+| 4 | Should a whitespace-only category (AC-7) be rejected, or treated as "no category given"? | **Rejected (HTTP 400), per the literal AC-7 reading.** This is a deliberate change from the prior clarification pass, which had instead treated whitespace-only as equivalent to omitted. See FR-1/FR-7 for the precise boundary between "omitted" (still defaults) and "provided but whitespace-only" (now rejected). |
+| 5 | How to backfill category for pre-existing rows? | **Schema migration with a SQL-level default** (not re-asked this round — a non-ambiguous implementation detail, unchanged from the prior pass). The `category` column is added with `DEFAULT 'Uncategorized'`, so existing rows are backfilled at the database level, not patched in application code. |
 
 ## 3. Functional Requirements
 
 ### FR-1 — Add category on item creation
 - `POST /api/items` accepts an optional `category` field alongside `name`.
-- If `category` is omitted, blank, or whitespace-only, the stored value is `"Uncategorized"`.
-- Leading/trailing whitespace on a provided category is trimmed before storage.
+- If `category` is **omitted from the request entirely**, the stored value defaults to `"Uncategorized"`.
+- If `category` **is provided but consists only of whitespace** (empty after trimming), the request is rejected — see FR-7. This is a deliberate distinction from "omitted": only a missing field defaults; a present-but-blank field is a validation error.
+- Leading/trailing whitespace on a provided, non-rejected category is trimmed before storage.
 
 ### FR-2 — Case-insensitive category identity
 - Category comparisons (for filtering and for applying the default) are case-insensitive.
@@ -45,9 +49,20 @@ belong to a specific group instead of scrolling through one long flat list.
 - `DELETE /api/items/:id` behaves as today. On success, the item is removed from the underlying data and disappears from any currently active filtered view (see FR-5 for the zero-remaining case).
 
 ### FR-7 — Category validation
-- A submitted category must not exceed 50 characters after trimming.
-- A category consisting only of whitespace is treated as "no category provided" (→ defaults to `Uncategorized`, per FR-1), not as a validation error.
-- A category over 50 characters is rejected with HTTP 400 and a clear validation message (consistent with the existing `name` validation pattern in `server/index.js`).
+- A submitted category must not exceed 50 characters after trimming; violating this is rejected with HTTP 400 and a clear validation message (consistent with the existing `name` validation pattern in `server/index.js`).
+- A category **provided but consisting only of whitespace** is **also** rejected with HTTP 400 — the same treatment as exceeding 50 characters — per the literal reading of the source story's AC-7.
+
+> **Change vs. the currently merged implementation:** `main`'s `server/index.js`
+> (and the prior `step1-rerun` requirements.md) treated whitespace-only the
+> same as omitted, silently defaulting to `Uncategorized`. This clarification
+> pass deliberately chose the opposite: whitespace-only is now a validation
+> error, distinct from an omitted field (which still defaults per FR-1).
+> **Architecture and implementation on this branch must add an explicit
+> "trimmed-to-empty but field was present" check** before the existing
+> omitted/defaulting logic, since the current code does not distinguish these
+> two cases. This is the one requirement that actually changed behavior on
+> this pass — flag it again at Design Review and Code Review so it isn't
+> missed.
 
 ### FR-8 — Backward-compatible data migration
 - The `items` table gets a new `category TEXT NOT NULL DEFAULT 'Uncategorized'` column.
@@ -65,7 +80,7 @@ belong to a specific group instead of scrolling through one long flat list.
 - Deploying this change must not break access to items created under the old schema (no `category` column). This is satisfied structurally by FR-8's default-value migration.
 
 ### NFR-4 — Test coverage
-- All new/changed behavior (add with category, add without category, filter by category, filter with no matches, validation rejection for overlong category, delete under an active filter) must have Playwright end-to-end coverage for both the happy path and edge/invalid-input cases.
+- All new/changed behavior (add with category, add without category, add with whitespace-only category [now a rejection case], filter by category, filter with no matches, validation rejection for overlong category, delete under an active filter) must have Playwright end-to-end coverage for both the happy path and edge/invalid-input cases.
 
 ## 5. Out of Scope (unchanged from source story)
 
@@ -77,7 +92,12 @@ belong to a specific group instead of scrolling through one long flat list.
 ## 6. Definition of Done
 
 - [x] `requirements.md` (this document) captures the finalized, clarified scope.
-- [x] `architecture.md` produced and reviewed (Step 2–3, architecture proposed, confirmed, and design-reviewed — see `design-review.md`).
-- [x] Implementation plan produced (Step 4 — see `impl-plan.md`, tasks T1-T12).
-- [x] Code implemented, reviewed, and tested — unit + Playwright e2e (Steps 5–7).
-- [ ] PR created with all required sections: Summary, Changes Made, Test Evidence, Known Limitations, Reviewer Checklist (Step 8).
+- [ ] `architecture.md` produced and reviewed (Stage 2–3) — **must account for the changed FR-7
+      whitespace-only behavior**, since the architecture that shipped on `main` was built against
+      the opposite decision.
+- [ ] Implementation plan produced (Stage 4).
+- [ ] Code implemented, reviewed, and tested — unit + Playwright e2e (Stages 5–7) — existing
+      `main` code and tests assume whitespace-only defaults to `Uncategorized` and will need the
+      FR-7 behavior change implemented and covered.
+- [ ] PR created with all required sections: Summary, Changes Made, Test Evidence, Known
+      Limitations, Reviewer Checklist (Stage 8).
