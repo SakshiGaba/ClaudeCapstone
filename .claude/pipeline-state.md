@@ -74,9 +74,9 @@ Per `my-app/impl-plan.md` (commit `24b4656`), layer-complete order, one task per
 | Task | Status |
 |---|---|
 | T1 — schema migration + index | ✅ Done — no code change needed (inherited from `main` unchanged, FR-7 doesn't touch schema); verified fresh-start migration + idempotent restart against a real DB, 2026-10-28 |
-| T2 — POST validation/defaulting (new omitted-vs-whitespace branch) | ✅ Done — new branch verified live (omitted defaults, whitespace/empty-string reject with new message, >50 chars and non-string unchanged) | `813c2ef` |
+| T2 — POST validation/defaulting (new omitted-vs-whitespace branch) | ✅ Done, commit `813c2ef` — new branch verified live (omitted defaults, whitespace/empty-string reject with new message, >50 chars and non-string unchanged) |
 | T3 — GET filter support | ✅ Done — no code change needed (inherited from `main` unchanged, FR-7 doesn't touch GET filtering); verified live (unfiltered, case-insensitive match, zero-match returns `[]`, non-string/array query param rejects with 400), 2026-10-28 |
-| T4 — client category input + key-omission POST body logic (new scope) | Not started |
+| T4 — client category input + key-omission POST body logic (new scope) | ✅ Done, commit `545877c` — POST body now omits `category` key when input is untouched/cleared (`''`), includes it as-is otherwise; build verified clean, logic self-checked against FR-1/FR-2/FR-7 |
 | T5 — client filter dropdown | Not started |
 | T6 — client empty state | Not started |
 | T7 — client delete-under-filter | Not started |
